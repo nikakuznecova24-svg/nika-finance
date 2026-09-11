@@ -3516,38 +3516,21 @@ function render(){
   // credits
   renderFreedomWidget();
   const creditSpotlight = document.getElementById('credit-spotlight');
-  if(creditSpotlight){
-    if(data.credits.length===0){
-      creditSpotlight.innerHTML = '';
-    }else{
-      const active = data.credits.filter(c=>c.monthsPaid < c.termMonths);
-      const _today = new Date();
-      const _curDay = _today.getDate();
-      const _daysInMonth = new Date(_today.getFullYear(), _today.getMonth()+1, 0).getDate();
-      const _daysUntil = (day) => day >= _curDay ? (day - _curDay) : (_daysInMonth - _curDay + day);
-      const featuredCredit = active.length>0
-        ? [...active].sort((a,b)=>_daysUntil(a.day)-_daysUntil(b.day))[0]
-        : [...data.credits].sort((a,b)=>b.principal-a.principal)[0];
-      const fm = getLoanMetrics(featuredCredit);
-      const isDone = featuredCredit.monthsPaid >= featuredCredit.termMonths;
-      creditSpotlight.innerHTML = `
-        <div class="spotlight-card credit">
-          <div class="spotlight-eyebrow">${!isDone ? 'Ближайший платёж' : 'Выплачено'}</div>
-          <div class="spotlight-name">${featuredCredit.name}</div>
-          <div class="spotlight-meta">${!isDone ? `осталось ${fmt(fm.remainingToPay)} · платёж ${featuredCredit.day}-го числа` : `выплачено полностью — ${fmt(fm.totalCost)}`}</div>
-          <div class="spotlight-track"><div class="spotlight-fill" style="width:${fm.pctPaid}%;"></div></div>
-          <div class="spotlight-bottom"><span>погашено</span><b>${fm.pctPaid}%</b></div>
-        </div>
-      `;
-    }
-  }
+  if(creditSpotlight) creditSpotlight.innerHTML = '';
   const creditList = document.getElementById('credit-list');
   const dueSoonList = [];
   if(data.credits.length===0){
     creditList.innerHTML = '<p class="empty">Добавь первый кредит — так будет видно, сколько осталось выплатить и сколько ты переплачиваешь банку.</p>';
   }else{
     const todayDay = new Date().getDate();
-    creditList.innerHTML = data.credits.map(c=>{
+    const _daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate();
+    const _daysUntil = (day) => day >= todayDay ? (day - todayDay) : (_daysInMonth - todayDay + day);
+    const sortedCredits = [...data.credits].sort((a,b)=>{
+      const aDone = a.monthsPaid >= a.termMonths, bDone = b.monthsPaid >= b.termMonths;
+      if(aDone !== bDone) return aDone ? 1 : -1;
+      return _daysUntil(a.day) - _daysUntil(b.day);
+    });
+    creditList.innerHTML = sortedCredits.map(c=>{
       const m = getLoanMetrics(c);
       const isDone = m.remainingMonths<=0;
       const daysLeft = c.day - todayDay;
