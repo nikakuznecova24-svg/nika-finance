@@ -3520,8 +3520,12 @@ function render(){
       creditSpotlight.innerHTML = '';
     }else{
       const active = data.credits.filter(c=>c.monthsPaid < c.termMonths);
+      const _today = new Date();
+      const _curDay = _today.getDate();
+      const _daysInMonth = new Date(_today.getFullYear(), _today.getMonth()+1, 0).getDate();
+      const _daysUntil = (day) => day >= _curDay ? (day - _curDay) : (_daysInMonth - _curDay + day);
       const featuredCredit = active.length>0
-        ? [...active].sort((a,b)=>a.day-b.day)[0]
+        ? [...active].sort((a,b)=>_daysUntil(a.day)-_daysUntil(b.day))[0]
         : [...data.credits].sort((a,b)=>b.principal-a.principal)[0];
       const fm = getLoanMetrics(featuredCredit);
       const isDone = featuredCredit.monthsPaid >= featuredCredit.termMonths;
