@@ -3611,8 +3611,7 @@ function render(){
       let payStatus = '';
       if(!isDone && !canPayNow){
         if(paidThisCycle) payStatus = 'платёж в этом месяце уже внесён ✓';
-        else if(daysLeft>7) payStatus = `кнопка появится за неделю до платежа`;
-        else payStatus = 'ожидаем следующий платёжный цикл';
+        else if(daysLeft<=7) payStatus = 'ожидаем следующий платёжный цикл';
       }
       const minTermNeeded = Math.ceil(c.principal / c.payment);
       const numbersInconsistent = m.r<=0 && (c.payment*c.termMonths) <= c.principal;
