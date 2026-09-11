@@ -27,7 +27,7 @@
     --sage:#6E9560;
     --amber:#C9506E;
     --red:#D2544A;
-    --radius:24px;
+    --radius:20px;
     --on-ink:#fff;
     --glow-1:#FFD9B8;
     --glow-2:#FFB8CC;
@@ -110,7 +110,7 @@
   .backup-divider::after{right:0;}
   .backup-warning{font-size:11px;color:var(--ink-soft);margin-top:12px;line-height:1.4;}
   .backup-hint{font-size:11px;color:var(--ink-soft);margin-top:10px;line-height:1.4;}
-  .backup-hint code{background:var(--card-2);padding:1px 5px;border-radius:5px;font-size:10.5px;word-break:break-all;}
+  .backup-hint code{background:var(--card-2);padding:1px 5px;border-radius:8px;font-size:10.5px;word-break:break-all;}
   #backup-download-btn{position:relative;overflow:hidden;transition:background-color .2s ease;}
   #backup-download-btn.done{background:var(--sage);}
   .theme-switch-icon{
@@ -149,7 +149,7 @@
 
   .insight-card{
     display:flex;align-items:center;gap:9px;
-    background:var(--tag-bg-sage);border:1px solid var(--line);border-radius:14px;
+    background:var(--tag-bg-sage);border:1px solid var(--line);border-radius:12px;
     padding:10px 13px;margin-bottom:12px;font-size:12.5px;color:var(--ink);line-height:1.4;
   }
   .insight-card .insight-icon{flex-shrink:0;font-size:15px;}
@@ -202,7 +202,7 @@
   .star-goal-fill{height:100%;background:#fff;border-radius:20px;transition:width .5s ease;}
 
   .spotlight-card{
-    border-radius:24px;padding:22px 20px;color:#fff;position:relative;overflow:hidden;
+    border-radius:20px;padding:22px 20px;color:#fff;position:relative;overflow:hidden;
     margin-bottom:18px;
   }
   .spotlight-card.goal{background:var(--grad-goal);box-shadow:0 14px 34px rgba(216,40,89,.2);}
@@ -217,7 +217,7 @@
 
   .freedom-widget{
     position:relative;overflow:hidden;text-align:center;
-    background:var(--grad-goal);border-radius:22px;padding:22px 20px;color:#fff;
+    background:var(--grad-goal);border-radius:20px;padding:22px 20px;color:#fff;
     margin-bottom:16px;box-shadow:0 14px 34px rgba(216,40,89,.22);
   }
   .freedom-glow{
@@ -323,7 +323,7 @@
   .dyn-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 4px 16px rgba(30,20,15,.05);}
   .dyn-legend{display:flex;gap:16px;font-size:12px;color:var(--ink-soft);margin-bottom:8px;}
   .dyn-legend span{display:flex;align-items:center;gap:6px;}
-  .dyn-dot{width:8px;height:8px;border-radius:2px;}
+  .dyn-dot{width:8px;height:8px;border-radius:8px;}
   .dyn-svg{display:block;width:100%;height:150px;overflow:visible;}
   #dyn-chart{position:relative;}
   .dyn-area{opacity:0;transition:opacity .7s ease;}
@@ -363,7 +363,7 @@
   .dyn-range-lbl{font-size:12px;color:var(--ink-soft);margin-left:2px;}
   .dyn-summary{margin-bottom:12px;}
   .dyn-mini-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-  .dyn-mini-stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 10px;}
+  .dyn-mini-stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 10px;}
   .dyn-sum-lbl{font-size:10.5px;color:var(--ink-soft);margin-bottom:4px;}
   .dyn-sum-num{font-size:15px;font-weight:700;}
 
@@ -397,7 +397,7 @@
   .leak-note b{color:var(--ink);}
 
   .review-card{
-    background:var(--grad-goal);border-radius:22px;padding:22px 20px;color:#fff;
+    background:var(--grad-goal);border-radius:20px;padding:22px 20px;color:#fff;
     margin-bottom:14px;box-shadow:0 14px 32px rgba(216,40,89,.2);
   }
   .review-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.05em;opacity:.8;font-weight:600;margin-bottom:10px;}
@@ -417,7 +417,7 @@
   .pvf-bar-fill.fact-bad{background:var(--red);}
   .pvf-legend{display:flex;gap:12px;font-size:10.5px;color:var(--ink-soft);margin-top:4px;}
   .pvf-legend span{display:flex;align-items:center;gap:4px;}
-  .pvf-legend i{width:7px;height:7px;border-radius:2px;display:inline-block;}
+  .pvf-legend i{width:7px;height:7px;border-radius:8px;display:inline-block;}
 
   .advice-item{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);}
   .advice-item:last-child{border-bottom:none;}
@@ -456,7 +456,7 @@
   .goal-nums-row b{color:var(--ink);font-weight:600;}
   .goal-deadline-hint{
     font-size:11.5px;color:var(--amber-text);background:var(--tag-bg-amber);
-    border-radius:10px;padding:6px 10px;margin-top:8px;
+    border-radius:12px;padding:6px 10px;margin-top:8px;
   }
   .bar-fill{height:100%;background:var(--grad-goal);border-radius:20px;transition:width .5s ease;}
   .goal-add{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
@@ -467,7 +467,7 @@
   .edit-btn:hover{color:var(--ink);}
 
   /* credits */
-  .credit-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px 14px;margin-bottom:8px;box-shadow:0 3px 12px rgba(30,20,15,.045);}
+  .credit-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:13px 14px;margin-bottom:8px;box-shadow:0 3px 12px rgba(30,20,15,.045);}
   .credit-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:6px 12px;}
   .credit-name{font-size:14px;font-weight:600;}
   .credit-meta{font-size:12px;color:var(--ink-soft);}
@@ -515,7 +515,7 @@
   .loan-neg-past{color:var(--sage);font-weight:700;}
 
   .sim-toggle-btn{
-    width:100%;margin-top:8px;border:1px dashed var(--line);border-radius:10px;
+    width:100%;margin-top:8px;border:1px dashed var(--line);border-radius:12px;
     background:none;color:var(--ink-soft);font-family:'Inter';font-weight:600;font-size:11.5px;
     padding:6px;cursor:pointer;
   }
@@ -530,7 +530,7 @@
   .sim-result-text{font-size:12px;color:var(--ink-soft);line-height:1.4;}
   .sim-result-text b{color:var(--ink);}
   .sim-apply-btn{
-    margin-top:8px;border:none;border-radius:10px;background:var(--ink);color:var(--on-ink);
+    margin-top:8px;border:none;border-radius:12px;background:var(--ink);color:var(--on-ink);
     font-family:'Inter';font-weight:600;font-size:12px;padding:7px 14px;cursor:pointer;
   }
   .sim-apply-btn.save-btn{
@@ -540,7 +540,7 @@
 
   .save-banner{
     display:flex;align-items:center;gap:10px;background:var(--tag-bg-sage);
-    border-radius:14px;padding:12px 14px;margin-bottom:12px;
+    border-radius:12px;padding:12px 14px;margin-bottom:12px;
     animation:pageIn .3s ease;
   }
   .save-banner-icon{font-size:22px;flex-shrink:0;}
@@ -583,7 +583,7 @@
 
   /* filters + tx */
   .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:12px;box-shadow:0 3px 12px rgba(30,20,15,.04);}
-  .filter-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:10px;box-shadow:0 3px 10px rgba(30,20,15,.035);}
+  .filter-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 16px;margin-bottom:10px;box-shadow:0 3px 10px rgba(30,20,15,.035);}
   .filter-type-toggle{display:flex;gap:6px;margin-bottom:10px;}
   .filter-group-lbl{font-size:10.5px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin:4px 2px 6px;}
   .filter-type-btn{
@@ -618,7 +618,7 @@
   .undo-toast span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .undo-toast button{
     flex-shrink:0;background:rgba(255,255,255,.16);color:var(--on-ink);border:none;
-    border-radius:14px;padding:6px 12px;font-family:'Inter';font-weight:700;font-size:12px;cursor:pointer;
+    border-radius:12px;padding:6px 12px;font-family:'Inter';font-weight:700;font-size:12px;cursor:pointer;
   }
   :root[data-theme="dark"] .undo-toast button{background:rgba(20,12,8,.22);}
 
@@ -674,7 +674,7 @@
   .onboarding-text{font-size:14px;color:var(--ink-soft);line-height:1.6;margin-bottom:26px;}
   .onboarding-dots{display:flex;justify-content:center;gap:6px;margin-bottom:22px;}
   .onboarding-dots span{width:6px;height:6px;border-radius:50%;background:var(--line);transition:background-color .2s ease, width .2s ease;}
-  .onboarding-dots span.active{background:var(--ink);width:18px;border-radius:4px;}
+  .onboarding-dots span.active{background:var(--ink);width:18px;border-radius:8px;}
 
   .modal-card-wide{max-width:380px;max-height:80vh;display:flex;flex-direction:column;}
   .modal-list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-shrink:0;}
@@ -719,7 +719,7 @@
 
   .confetti-wrap{position:fixed;top:40%;left:50%;width:0;height:0;z-index:60;pointer-events:none;}
   .confetti-piece{
-    position:absolute;top:0;left:0;width:8px;height:8px;border-radius:2px;
+    position:absolute;top:0;left:0;width:8px;height:8px;border-radius:8px;
     animation:confettiBurst .9s cubic-bezier(.2,.7,.3,1) forwards;
   }
   @keyframes confettiBurst{
@@ -734,7 +734,7 @@
   .flash-new{animation:flashNew 1.2s ease;}
   /* planning */
   .plan-goals{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
-  .plan-goal-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(30,20,15,.04);}
+  .plan-goal-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(30,20,15,.04);}
   .plan-goal-card.accent{
     position:relative;background:var(--card-2);border:2px solid transparent;padding:11px;
     box-shadow:0 4px 14px rgba(255,90,110,.16);
@@ -749,7 +749,7 @@
   .plan-goal-card .plan-goal-lbl{font-size:11px;color:var(--ink-soft);margin-bottom:4px;}
   .plan-goal-card.accent .plan-goal-lbl{color:var(--ink);font-weight:700;letter-spacing:.02em;}
   .plan-goal-card input{text-align:center;padding:7px 4px;font-size:13px;}
-  .plan-total-bar{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin-bottom:12px;box-shadow:0 4px 16px rgba(30,20,15,.05);}
+  .plan-total-bar{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px 18px;margin-bottom:12px;box-shadow:0 4px 16px rgba(30,20,15,.05);}
   .plan-scale-wrap{position:relative;padding-top:28px;}
   .plan-earned-marker{
     position:absolute;top:0;transform:translateX(-50%);
@@ -783,7 +783,7 @@
   .plan-scale-mark-val{font-size:13px;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
   /* budgets */
-  .budget-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:8px;box-shadow:0 3px 10px rgba(30,20,15,.04);}
+  .budget-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 16px;margin-bottom:8px;box-shadow:0 3px 10px rgba(30,20,15,.04);}
   .budget-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;flex-wrap:wrap;gap:4px;}
   .budget-cat{font-weight:600;}
   .budget-nums{color:var(--ink-soft);}
@@ -795,7 +795,7 @@
   .budget-tag.warn{background:var(--tag-bg-amber);color:var(--amber-text);}
   .budget-tag.over{background:var(--tag-bg-red);color:var(--red);}
   .plan-list-item{
-    background:var(--card-2);border:1px solid var(--line);border-radius:14px;
+    background:var(--card-2);border:1px solid var(--line);border-radius:12px;
     padding:11px 14px;margin-bottom:8px;font-size:13px;
   }
   .plan-list-item:last-child{margin-bottom:0;}
@@ -841,7 +841,7 @@
 
   .filter-toggle-btn{
     width:100%;display:flex;align-items:center;justify-content:space-between;
-    background:var(--card-2);border:1px solid var(--line);border-radius:14px;
+    background:var(--card-2);border:1px solid var(--line);border-radius:12px;
     padding:12px 16px;margin-bottom:10px;cursor:pointer;
     font-family:'Inter';font-weight:600;font-size:13px;color:var(--ink);
   }
@@ -881,7 +881,7 @@
   }
   .subtab-btn.active{background:var(--amber);color:var(--on-ink);border-color:var(--amber);}
   .nested-subtabs{margin-bottom:14px;}
-  .nested-subtabs .subtab-btn{padding:7px;font-size:12px;border-radius:10px;background:var(--card-2);}
+  .nested-subtabs .subtab-btn{padding:7px;font-size:12px;border-radius:12px;background:var(--card-2);}
   .nested-subtabs .subtab-btn.active{background:var(--card);color:var(--ink);border-color:var(--ink);}
   .subpage{display:none;}
   .subpage.active{display:block;animation:pageIn .2s ease;}
@@ -902,7 +902,7 @@
     position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);
     width:calc(100% - 28px);max-width:480px;z-index:15;
     display:flex;justify-content:space-around;
-    background:var(--card);border:1px solid var(--line);border-radius:26px;
+    background:var(--card);border:1px solid var(--line);border-radius:20px;
     backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
     padding:7px 6px;box-shadow:0 14px 32px rgba(30,20,15,.14);
   }
@@ -910,10 +910,10 @@
     background:none;border:none;cursor:pointer;flex:1;max-width:100px;
     display:flex;flex-direction:column;align-items:center;gap:3px;
     padding:5px 2px 4px;color:var(--ink-soft);font-family:'Inter';
-    border-radius:16px;transition:color .2s ease;
+    border-radius:20px;transition:color .2s ease;
   }
   .tabbar-icon-wrap{
-    position:relative;width:40px;height:28px;border-radius:14px;
+    position:relative;width:40px;height:28px;border-radius:12px;
     display:flex;align-items:center;justify-content:center;
     transition:background-color .25s ease, transform .2s ease;
   }
@@ -2730,6 +2730,21 @@ function toggleCreditMenu(id){
   openCreditMenuId = openCreditMenuId===id ? null : id;
   render();
 }
+let openCardMenuId = null;
+function toggleCardMenu(id){
+  openCardMenuId = openCardMenuId===id ? null : id;
+  render();
+}
+let openDebtMenuId = null;
+function toggleDebtMenu(id){
+  openDebtMenuId = openDebtMenuId===id ? null : id;
+  render();
+}
+let openGoalMenuId = null;
+function toggleGoalMenu(id){
+  openGoalMenuId = openGoalMenuId===id ? null : id;
+  render();
+}
 function toggleSimulator(id){
   const el = document.getElementById('sim-panel-'+id);
   if(!el) return;
@@ -3686,13 +3701,18 @@ function render(){
           if(daysLeft>=0) graceHtml = `<span>грейс-период — ещё <b>${daysLeft} ${daysLeft===1?'день':daysLeft<5?'дня':'дней'}</b></span>`;
           else graceHtml = `<span style="color:var(--red);">грейс-период истёк</span>`;
         }
+        const cMenuOpen = openCardMenuId===c.id;
         return `
         <div class="card-item">
           <div class="card-item-top">
             <div class="card-item-name">${c.name}</div>
-            <span class="edit-btn" onclick="editCard(${c.id})" style="cursor:pointer;">✎</span>
-            <span class="del-btn" onclick="delCard(${c.id})" style="cursor:pointer;">✕</span>
+            <span class="edit-btn credit-menu-btn" onclick="toggleCardMenu(${c.id})" style="cursor:pointer;">⋯</span>
           </div>
+          ${cMenuOpen ? `
+          <div class="credit-menu-row">
+            <button class="edit-btn" onclick="editCard(${c.id})" aria-label="Изменить">✎ изменить</button>
+            <button class="del-btn" onclick="delCard(${c.id})" aria-label="Удалить">✕ удалить</button>
+          </div>` : ''}
           <div class="card-item-avail">${fmt(available)}</div>
           <div class="card-item-avail-lbl">доступно из ${fmt(c.limit)}</div>
           <div class="card-track"><div class="card-fill" style="width:${usedPct}%;background:${fillColor};"></div></div>
@@ -3739,19 +3759,24 @@ function render(){
       debtList.innerHTML = data.debts.map(d=>{
         const pct = d.amount>0 ? Math.min(100, Math.round((d.paid/d.amount)*100)) : 0;
         const left = Math.max(0, d.amount - d.paid);
+        const dMenuOpen = openDebtMenuId===d.id;
         return `
         <div class="debt-item">
           <div class="debt-item-top">
             <div class="debt-item-name">${d.person}</div>
             <span class="debt-dir-tag ${d.direction}">${d.direction==='owe' ? 'я должна' : 'мне должны'}</span>
+            <span class="edit-btn credit-menu-btn" onclick="toggleDebtMenu(${d.id})" style="cursor:pointer;">⋯</span>
           </div>
+          ${dMenuOpen ? `
+          <div class="credit-menu-row">
+            <button class="edit-btn" onclick="editDebt(${d.id})" aria-label="Изменить">✎ изменить</button>
+            <button class="del-btn" onclick="delDebt(${d.id})" aria-label="Удалить">✕ удалить</button>
+          </div>` : ''}
           <div class="goal-nums-row"><span><b>${fmt(d.paid)}</b> отдано</span><span>осталось ${fmt(left)}</span></div>
           <div class="debt-track"><div class="debt-fill" style="width:${pct}%;"></div></div>
           <div class="goal-add">
             <input type="number" id="debt-pay-${d.id}" placeholder="Внести, ₽">
             <button class="primary" onclick="payDebt(${d.id})">Внести</button>
-            <button class="edit-btn" onclick="editDebt(${d.id})" aria-label="Изменить">✎</button>
-            <button class="del-btn" onclick="delDebt(${d.id})" aria-label="Удалить">✕</button>
           </div>
         </div>`;
       }).join('');
@@ -3933,6 +3958,7 @@ function render(){
   }else{
     goalList.innerHTML = data.goals.map((g,i)=>{
       const pct = Math.min(100, Math.round((g.saved/g.target)*100));
+      const gMenuOpen = openGoalMenuId===g.id;
       return `
       <div class="goal-card ${g.id===lastAddedGoal?'flash-new':''}">
         <div class="sphere c${i%3}"></div>
@@ -3942,8 +3968,14 @@ function render(){
               <button class="star-btn ${g.starred?'starred':''}" onclick="toggleGoalStar(${g.id})" aria-label="Отметить как главную">${g.starred?'★':'☆'}</button>
               ${g.name}
             </div>
+            <span class="edit-btn credit-menu-btn" onclick="toggleGoalMenu(${g.id})" style="cursor:pointer;">⋯</span>
             <div class="goal-pct">${pct}%</div>
           </div>
+          ${gMenuOpen ? `
+          <div class="credit-menu-row">
+            <button class="edit-btn" onclick="editGoal(${g.id})" aria-label="Изменить">✎ изменить</button>
+            <button class="del-btn" onclick="delGoal(${g.id})" aria-label="Удалить">✕ удалить</button>
+          </div>` : ''}
           <div class="bar-track"><div class="bar-fill" style="width:${pct}%;"></div></div>
           <div class="goal-nums-row"><span><b>${fmt(g.saved)}</b> отложено</span><span>осталось ${fmt(Math.max(0, g.target - g.saved))}</span></div>
           ${g.deadline ? (()=>{
@@ -3956,8 +3988,6 @@ function render(){
           <div class="goal-add">
             <input type="number" id="goal-add-${g.id}" placeholder="Отложить, ₽">
             <button class="primary" onclick="addToGoal(${g.id})">Отложить</button>
-            <button class="edit-btn" onclick="editGoal(${g.id})" aria-label="Изменить">✎</button>
-            <button class="del-btn" onclick="delGoal(${g.id})" aria-label="Удалить">✕</button>
           </div>
         </div>
       </div>`;
