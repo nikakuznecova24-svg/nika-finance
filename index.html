@@ -2749,7 +2749,7 @@ function runSimulator(id){
   const c = data.credits.find(c=>c.id===id);
   const metrics = getLoanMetrics(c);
   if(extra > metrics.remainingBalance){
-    extra = metrics.remainingBalance;
+    extra = Math.floor(metrics.remainingBalance);
     input.value = extra;
     showToast(`сумма больше тела кредита — округлила до ${fmt(extra)}`);
   }
