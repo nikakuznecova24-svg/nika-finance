@@ -3621,7 +3621,7 @@ function render(){
           <div class="credit-name">${c.name}${isDone ? '<span class="due-tag done">выплачено</span>' : ''}</div>
           <button class="edit-btn credit-menu-btn" onclick="toggleCreditMenu(${c.id})" aria-label="Ещё">⋯</button>
         </div>
-        <div class="credit-meta">${c.monthsPaid}/${m.effectiveTermMonths} мес. · <span class="${dueSoon?'due-soon-text':''}">${c.day}-го числа</span></div>
+        <div class="credit-meta">${c.monthsPaid}/${m.effectiveTermMonths} мес. · <span class="${dueSoon?'due-soon-text':''}">${c.day}-го числа</span> · ежемесячно ${fmt(c.paySchedule && c.paySchedule.length ? (c.paySchedule[c.monthsPaid] ?? c.paySchedule[c.paySchedule.length-1]) : c.payment)}</div>
         ${menuOpen ? `
         <div class="credit-menu-row">
           <button class="edit-btn" onclick="editCredit(${c.id})" aria-label="Изменить">✎ изменить</button>
@@ -3666,10 +3666,7 @@ function render(){
           </div></div>` : ''}
         </div></div>
 
-        <div class="credit-row">
-          <span class="credit-meta">ежемесячно ${fmt(c.paySchedule && c.paySchedule.length ? (c.paySchedule[c.monthsPaid] ?? c.paySchedule[c.paySchedule.length-1]) : c.payment)}</span>
-          ${canPayNow ? `<button class="primary" style="width:auto;" onclick="payCredit(${c.id})">Внести платёж</button>` : ''}
-        </div>
+        ${canPayNow ? `<div class="credit-row"><button class="primary" style="width:auto;" onclick="payCredit(${c.id})">Внести платёж</button></div>` : ''}
         ${payStatus ? `<div class="credit-pay-status">${payStatus}</div>` : ''}
       </div>`;
     }).join('');
