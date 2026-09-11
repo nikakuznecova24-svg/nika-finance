@@ -3868,23 +3868,7 @@ function render(){
 
   // goals
   const goalSpotlight = document.getElementById('goal-spotlight');
-  if(data.goals.length===0){
-    goalSpotlight.innerHTML = '';
-  }else{
-    const starred = data.goals.filter(g=>g.starred);
-    const pool = starred.length>0 ? starred : data.goals;
-    const featured = [...pool].sort((a,b)=> b.saved/b.target - a.saved/a.target)[0];
-    const fPct = Math.min(100, Math.round((featured.saved/featured.target)*100));
-    goalSpotlight.innerHTML = `
-      <div class="spotlight-card goal">
-        <div class="spotlight-eyebrow">${starred.length>0 ? 'Главная цель' : 'В приоритете'}</div>
-        <div class="spotlight-name">${featured.name}</div>
-        <div class="spotlight-meta">${fmt(featured.saved)} из ${fmt(featured.target)}</div>
-        <div class="spotlight-track"><div class="spotlight-fill" style="width:${fPct}%;"></div></div>
-        <div class="spotlight-bottom"><span>прогресс</span><b>${fPct}%</b></div>
-      </div>
-    `;
-  }
+  if(goalSpotlight) goalSpotlight.innerHTML = '';
 
   const goalsInsightCard = document.getElementById('goals-insight-card');
   let goalsInsight = null;
