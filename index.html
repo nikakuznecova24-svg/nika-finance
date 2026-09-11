@@ -2713,6 +2713,11 @@ function runSimulator(id){
   if(!extra || extra<=0){ shakeField('sim-extra-'+id); return; }
   const c = data.credits.find(c=>c.id===id);
   const metrics = getLoanMetrics(c);
+  if(extra > metrics.remainingBalance){
+    shakeField('sim-extra-'+id);
+    showToast(`больше, чем осталось от тела кредита — максимум ${fmt(metrics.remainingBalance)}`);
+    return;
+  }
   const result = simulateExtra(c, metrics, extra);
   const out = document.getElementById('sim-result-'+id);
   const daysSaved = result.monthsSavedA ? Math.round(result.monthsSavedA*30.4) : 0;
@@ -2760,8 +2765,8 @@ function applyEarlyRepay(id, mode){
   const extra = parseFloat(out.dataset.extra);
   if(!c || !extra || extra<=0) return;
   const metrics = getLoanMetrics(c);
-  if(extra > metrics.remainingBalance + metrics.futureInterest){
-    showToast('Сумма больше остатка долга');
+  if(extra > metrics.remainingBalance){
+    showToast(`больше, чем осталось от тела кредита — максимум ${fmt(metrics.remainingBalance)}`);
     return;
   }
   const dateBefore = computeFreedomDate();
@@ -3597,7 +3602,7 @@ function render(){
         <div class="sim-panel ${simOpen ? 'open' : ''}" id="sim-panel-${c.id}"><div>
           <div class="sim-panel-lbl">Что если внести сверху разом:</div>
           <div class="form-row">
-            <input type="number" id="sim-extra-${c.id}" placeholder="Сумма, ₽">
+            <input type="number" id="sim-extra-${c.id}" max="${Math.floor(m.remainingBalance)}" placeholder="Сумма, ₽ (макс. ${fmt(m.remainingBalance)})">
             <button class="primary" style="width:auto;" onclick="runSimulator(${c.id})">Рассчитать</button>
           </div>
           <div class="sim-result" id="sim-result-${c.id}" style="display:none;"></div>
