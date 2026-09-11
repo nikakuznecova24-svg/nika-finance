@@ -233,6 +233,13 @@
     margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.25);
     cursor:pointer;flex-wrap:wrap;text-align:center;
   }
+  .freedom-scope-gear{
+    position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;
+    background:rgba(255,255,255,.18);border:none;color:#fff;font-size:13px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:.75;
+    transition:opacity .15s ease,background-color .15s ease;
+  }
+  .freedom-scope-gear.active{background:rgba(255,255,255,.38);opacity:1;}
   .freedom-scope-toggle input{position:absolute;opacity:0;width:0;height:0;}
   .freedom-scope-switch{
     position:relative;width:34px;height:20px;border-radius:20px;flex-shrink:0;
@@ -465,11 +472,15 @@
   .credit-name{font-size:14px;font-weight:600;}
   .credit-meta{font-size:12px;color:var(--ink-soft);}
   .credit-track{height:7px;background:var(--card-2);border-radius:20px;overflow:hidden;margin-bottom:12px;}
-  .credit-fill{height:100%;background:var(--grad-balance);border-radius:20px;transition:width .5s ease;}
+  .credit-fill{height:100%;background:var(--amber);border-radius:20px;transition:width .5s ease;}
   .credit-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px;}
   .credit-row input{flex:1;padding:7px 10px;font-size:13px;min-width:100px;}
   .credit-row button{width:auto;padding:7px 12px;font-size:12px;}
   .due-tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:8px;}
+  .credit-menu-btn{font-size:18px;line-height:1;padding:2px 6px;}
+  .credit-menu-row{display:flex;gap:14px;margin:-2px 0 8px;}
+  .credit-menu-row .edit-btn,.credit-menu-row .del-btn{font-size:12px;}
+  .due-soon-text{color:var(--amber-text);font-weight:600;}
   .due-tag.soon{background:var(--tag-bg-amber);color:var(--amber-text);}
 
   .credit-inconsistent-warning{
@@ -1213,11 +1224,7 @@
     <div class="freedom-eyebrow">🎉 День финансовой свободы</div>
     <div class="freedom-date" id="freedom-date">—</div>
     <div class="freedom-sub" id="freedom-sub">При текущем темпе выплат</div>
-    <label class="freedom-scope-toggle">
-      <input type="checkbox" id="freedom-scope-checkbox" onchange="toggleFreedomScope()">
-      <span class="freedom-scope-switch"><span class="freedom-scope-thumb"></span></span>
-      <span class="freedom-scope-label">Учитывать карты и личные долги</span>
-    </label>
+    <button type="button" class="freedom-scope-gear" id="freedom-scope-gear-btn" onclick="toggleFreedomScope()" title="Учитывать карты и личные долги" aria-label="Учитывать карты и личные долги">⚙️</button>
   </div>
 
   <div class="total-saved-widget" id="total-saved-widget" style="display:none;">
@@ -1732,8 +1739,8 @@ function renderFreedomWidget(){
   const widget = document.getElementById('freedom-widget');
   if(!widget) return;
 
-  const scopeCheckbox = document.getElementById('freedom-scope-checkbox');
-  if(scopeCheckbox) scopeCheckbox.checked = !!data.freedomIncludeAll;
+  const scopeGearBtn = document.getElementById('freedom-scope-gear-btn');
+  if(scopeGearBtn) scopeGearBtn.classList.toggle('active', !!data.freedomIncludeAll);
 
   const savedWidget = document.getElementById('total-saved-widget');
   const totalSaved = data.totalInterestSaved || 0;
@@ -1765,10 +1772,10 @@ function renderFreedomWidget(){
   lastFreedomDateStr = dateStr;
 }
 function toggleFreedomScope(){
-  const checkbox = document.getElementById('freedom-scope-checkbox');
-  data.freedomIncludeAll = checkbox.checked;
+  data.freedomIncludeAll = !data.freedomIncludeAll;
   lastFreedomDateStr = null;
   saveData(); render();
+  showToast(data.freedomIncludeAll ? 'учитываю карты и личные долги' : 'без карт и личных долгов');
 }
 
 let planScaleCurrent = 0;
@@ -2718,6 +2725,11 @@ function payCredit(id){
 }
 let openSimulatorId = null;
 let openCreditDetailsId = null;
+let openCreditMenuId = null;
+function toggleCreditMenu(id){
+  openCreditMenuId = openCreditMenuId===id ? null : id;
+  render();
+}
 function toggleSimulator(id){
   const el = document.getElementById('sim-panel-'+id);
   if(!el) return;
@@ -3578,6 +3590,7 @@ function render(){
       if(dueSoon) dueSoonList.push({ name:c.name, daysLeft, amount:c.payment });
       const simOpen = openSimulatorId===c.id;
       const detailsOpen = openCreditDetailsId===c.id;
+      const menuOpen = openCreditMenuId===c.id;
       const paidThisCycle = data.creditPaymentLog.some(p=>p.creditId===c.id && !p.early && p.date.slice(0,7)===monthKey);
       const canPayNow = !isDone && !paidThisCycle && daysLeft>=0 && daysLeft<=7;
       let payStatus = '';
@@ -3591,9 +3604,15 @@ function render(){
       return `
       <div class="credit-card ${c.id===lastAddedCredit?'flash-new':''}">
         <div class="credit-top">
-          <div class="credit-name">${c.name}${isDone ? '<span class="due-tag done">выплачено</span>' : dueSoon ? '<span class="due-tag soon">платёж скоро</span>' : ''}</div>
-          <div class="credit-meta">${c.monthsPaid}/${m.effectiveTermMonths} мес. · ${c.day}-го числа</div>
+          <div class="credit-name">${c.name}${isDone ? '<span class="due-tag done">выплачено</span>' : ''}</div>
+          <button class="edit-btn credit-menu-btn" onclick="toggleCreditMenu(${c.id})" aria-label="Ещё">⋯</button>
         </div>
+        <div class="credit-meta">${c.monthsPaid}/${m.effectiveTermMonths} мес. · <span class="${dueSoon?'due-soon-text':''}">${c.day}-го числа</span></div>
+        ${menuOpen ? `
+        <div class="credit-menu-row">
+          <button class="edit-btn" onclick="editCredit(${c.id})" aria-label="Изменить">✎ изменить</button>
+          <button class="del-btn" onclick="delCredit(${c.id})" aria-label="Удалить">✕ удалить</button>
+        </div>` : ''}
         <div class="credit-track"><div class="credit-fill" style="width:${m.pctPaid}%;"></div></div>
 
         ${numbersInconsistent ? `
@@ -3621,26 +3640,23 @@ function render(){
             <div class="loan-block-lbl">Осталось выплатить / будущая переплата</div>
             <div class="loan-block-row"><span>${fmt(m.remainingToPay)}</span><b class="loan-neg">${fmt(m.futureInterest)}</b></div>
           </div>
+          ${!isDone ? `
+          <button class="sim-toggle-btn" onclick="toggleSimulator(${c.id})">🧮 Калькулятор досрочного погашения</button>
+          <div class="sim-panel ${simOpen ? 'open' : ''}" id="sim-panel-${c.id}"><div>
+            <div class="sim-panel-lbl">Что если внести сверху разом:</div>
+            <div class="form-row">
+              <input type="number" id="sim-extra-${c.id}" max="${Math.floor(m.remainingBalance)}" placeholder="Сумма, ₽ (макс. ${fmt(m.remainingBalance)})">
+              <button class="primary" style="width:auto;" onclick="runSimulator(${c.id})">Рассчитать</button>
+            </div>
+            <div class="sim-result" id="sim-result-${c.id}" style="display:none;"></div>
+          </div></div>` : ''}
         </div></div>
 
         <div class="credit-row">
           <span class="credit-meta">ежемесячно ${fmt(c.paySchedule && c.paySchedule.length ? (c.paySchedule[c.monthsPaid] ?? c.paySchedule[c.paySchedule.length-1]) : c.payment)}</span>
           ${canPayNow ? `<button class="primary" style="width:auto;" onclick="payCredit(${c.id})">Внести платёж</button>` : ''}
-          <button class="edit-btn" onclick="editCredit(${c.id})" aria-label="Изменить">✎</button>
-          <button class="del-btn" onclick="delCredit(${c.id})" aria-label="Удалить">✕</button>
         </div>
         ${payStatus ? `<div class="credit-pay-status">${payStatus}</div>` : ''}
-
-        ${!isDone ? `
-        <button class="sim-toggle-btn" onclick="toggleSimulator(${c.id})">🧮 Калькулятор досрочного погашения</button>
-        <div class="sim-panel ${simOpen ? 'open' : ''}" id="sim-panel-${c.id}"><div>
-          <div class="sim-panel-lbl">Что если внести сверху разом:</div>
-          <div class="form-row">
-            <input type="number" id="sim-extra-${c.id}" max="${Math.floor(m.remainingBalance)}" placeholder="Сумма, ₽ (макс. ${fmt(m.remainingBalance)})">
-            <button class="primary" style="width:auto;" onclick="runSimulator(${c.id})">Рассчитать</button>
-          </div>
-          <div class="sim-result" id="sim-result-${c.id}" style="display:none;"></div>
-        </div></div>` : ''}
       </div>`;
     }).join('');
     lastAddedCredit = null;
