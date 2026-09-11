@@ -2603,12 +2603,12 @@ function addCredit(){
   if(!termMonths || termMonths<=0){ shakeField('credit-term'); return; }
   if(isNaN(monthsPaid) || monthsPaid<0) monthsPaid = 0;
   if(!day || day<1) day = 1;
-  if(day>28) day = 28;
+  if(day>31) day = 31;
   const rate = solveMonthlyRate(principal, payment, termMonths);
 
   if(editingCreditId){
     const c = data.credits.find(c=>c.id===editingCreditId);
-    Object.assign(c, { name, principal, payment, termMonths, monthsPaid, day, rate, extraPaid: 0 });
+    Object.assign(c, { name, principal, payment, termMonths, monthsPaid, day, rate });
     lastAddedCredit = editingCreditId;
     editingCreditId = null;
     document.getElementById('credit-submit-btn').textContent = 'Добавить кредит';
@@ -2726,14 +2726,14 @@ function toggleCreditDetails(id){
 }
 function runSimulator(id){
   const input = document.getElementById('sim-extra-'+id);
-  const extra = parseFloat(input.value);
+  let extra = parseFloat(input.value);
   if(!extra || extra<=0){ shakeField('sim-extra-'+id); return; }
   const c = data.credits.find(c=>c.id===id);
   const metrics = getLoanMetrics(c);
   if(extra > metrics.remainingBalance){
-    shakeField('sim-extra-'+id);
-    showToast(`больше, чем осталось от тела кредита — максимум ${fmt(metrics.remainingBalance)}`);
-    return;
+    extra = metrics.remainingBalance;
+    input.value = extra;
+    showToast(`сумма больше тела кредита — округлила до ${fmt(extra)}`);
   }
   const result = simulateExtra(c, metrics, extra);
   const out = document.getElementById('sim-result-'+id);
@@ -2779,13 +2779,10 @@ function runSimulator(id){
 function applyEarlyRepay(id, mode){
   const c = data.credits.find(c=>c.id===id);
   const out = document.getElementById('sim-result-'+id);
-  const extra = parseFloat(out.dataset.extra);
+  let extra = parseFloat(out.dataset.extra);
   if(!c || !extra || extra<=0) return;
   const metrics = getLoanMetrics(c);
-  if(extra > metrics.remainingBalance){
-    showToast(`больше, чем осталось от тела кредита — максимум ${fmt(metrics.remainingBalance)}`);
-    return;
-  }
+  if(extra > metrics.remainingBalance) extra = metrics.remainingBalance;
   const dateBefore = computeFreedomDate();
   const result = simulateExtra(c, metrics, extra);
   const savedNow = mode==='term' ? result.interestSavedA : result.interestSavedB;
@@ -3556,7 +3553,7 @@ function render(){
     creditList.innerHTML = sortedCredits.map(c=>{
       const m = getLoanMetrics(c);
       const isDone = m.remainingMonths<=0;
-      const daysLeft = c.day - todayDay;
+      const daysLeft = _daysUntil(c.day);
       const dueSoon = daysLeft>=0 && daysLeft<=5 && !isDone;
       if(dueSoon) dueSoonList.push({ name:c.name, daysLeft, amount:c.payment });
       const simOpen = openSimulatorId===c.id;
