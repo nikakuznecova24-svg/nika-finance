@@ -2745,8 +2745,8 @@ function runSimulator(id){
       <div class="sim-result-title">📉 Сократить срок</div>
       <div class="sim-result-text">${result.monthsA!==null
         ? (result.monthsSavedA>0
-            ? `Кредит закроется на <b>${result.monthsSavedA} мес.</b> раньше`
-            : `Срок почти не изменится, но проценты всё равно уменьшатся`)
+            ? `Кредит закроется на <b>${result.monthsSavedA} мес.</b> раньше, экономия на процентах — <b>${fmt(result.interestSavedA)}</b>`
+            : `Срок почти не изменится, но проценты всё равно уменьшатся на <b>${fmt(result.interestSavedA)}</b>`)
         : 'платёж слишком мал, чтобы покрыть проценты'}</div>
       ${result.monthsA!==null ? `<button class="sim-apply-btn save-btn" onclick="applyEarlyRepay(${id},'term')">💰 Спасти ${fmt(result.interestSavedA)}</button>` : ''}
     </div>
