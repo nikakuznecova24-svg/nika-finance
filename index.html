@@ -2285,7 +2285,22 @@ function switchPage(pageId){
   document.getElementById('page-'+pageId).classList.add('active');
   document.querySelectorAll('.tabbar-btn').forEach(b=>b.classList.toggle('active', b.dataset.page===pageId));
   window.scrollTo({top:0, behavior:'auto'});
-  try{ window.storage.set(LAST_PAGE_KEY, pageId, false); }catch(e){}
+  persistLastPage();
+}
+function persistLastPage(){
+  try{
+    const scope = document.getElementById('page-credits');
+    const balActive = scope ? scope.querySelector(':scope > .subpage.active') : null;
+    const balanceSub = balActive ? balActive.id.replace('bal-','') : null;
+    const oblScope = document.getElementById('bal-obligations');
+    const oblActive = oblScope ? oblScope.querySelector(':scope > .subpage.active') : null;
+    const obligationSub = oblActive ? oblActive.id.replace('obl-','') : null;
+    const histScope = document.getElementById('page-history');
+    const histActive = histScope ? histScope.querySelector('.subpage.active') : null;
+    const historySub = histActive ? histActive.id.replace('hist-','') : null;
+    const state = { page: currentPageId(), balanceSub, obligationSub, historySub };
+    window.storage.set(LAST_PAGE_KEY, JSON.stringify(state), false);
+  }catch(e){}
 }
 
 window.addEventListener('scroll', ()=>{
@@ -2297,6 +2312,7 @@ function switchHistorySub(sub){
   scope.querySelectorAll('.subpage').forEach(p=>p.classList.remove('active'));
   document.getElementById('hist-'+sub).classList.add('active');
   scope.querySelectorAll('.subtab-btn').forEach(b=>b.classList.toggle('active', b.dataset.sub===sub));
+  persistLastPage();
 }
 
 function switchBalanceSub(sub){
@@ -2310,6 +2326,7 @@ function switchBalanceSub(sub){
     const oblScope = document.getElementById('bal-obligations');
     if(!oblScope.querySelector(':scope > .subpage.active')) switchObligationSub('credits');
   }
+  persistLastPage();
 }
 function switchObligationSub(sub){
   const scope = document.getElementById('bal-obligations');
@@ -2318,6 +2335,7 @@ function switchObligationSub(sub){
   scope.querySelectorAll(':scope > .subpage').forEach(p=>p.classList.remove('active'));
   target.classList.add('active');
   scope.querySelectorAll('.subtab-btn').forEach(b=>b.classList.toggle('active', b.dataset.nested===sub));
+  persistLastPage();
 }
 
 const PAGE_ORDER = ['home','plan','credits','history'];
@@ -4106,14 +4124,25 @@ async function init(){
   planViewMonth = currentMonthKey();
   archiveViewMonth = currentMonthKey();
   let lastPage = 'home';
+  let lastState = null;
   try{
     const [, , lastPageRes] = await Promise.all([
       loadTheme(),
       loadData(),
       withTimeout(window.storage.get(LAST_PAGE_KEY, false), 1800).catch(()=>null)
     ]);
-    if(lastPageRes && lastPageRes.value && ['home','plan','credits','history'].includes(lastPageRes.value)){
-      lastPage = lastPageRes.value;
+    if(lastPageRes && lastPageRes.value){
+      if(['home','plan','credits','history'].includes(lastPageRes.value)){
+        lastPage = lastPageRes.value;
+      }else{
+        try{
+          const parsed = JSON.parse(lastPageRes.value);
+          if(parsed && ['home','plan','credits','history'].includes(parsed.page)){
+            lastPage = parsed.page;
+            lastState = parsed;
+          }
+        }catch(e){}
+      }
     }
     render();
     try{ syncArchiveFilterDates(); }catch(e){}
@@ -4121,6 +4150,13 @@ async function init(){
     console.error('init render error', e);
   }
   try{ switchPage(lastPage); }catch(e){}
+  try{
+    if(lastState){
+      if(lastState.balanceSub) switchBalanceSub(lastState.balanceSub);
+      if(lastState.obligationSub) switchObligationSub(lastState.obligationSub);
+      if(lastState.historySub) switchHistorySub(lastState.historySub);
+    }
+  }catch(e){}
   document.getElementById('skeleton').style.display = 'none';
   document.getElementById('app-content').style.display = 'block';
   try{ await maybeShowOnboarding(); }catch(e){}
