@@ -1617,6 +1617,22 @@ function buildSchedule(P, M, N, r){
   return rows;
 }
 function getLoanMetrics(c){
+  const paidMonths0 = Math.max(0, c.monthsPaid||0);
+  if(c.paySchedule && c.paySchedule.length){
+    const remainingArr = c.paySchedule.slice(paidMonths0);
+    const pastArr = c.paySchedule.slice(0, paidMonths0);
+    const remainingMonths = remainingArr.length;
+    const remainingToPay = remainingArr.reduce((s,v)=>s+v,0);
+    const paidTotal = pastArr.reduce((s,v)=>s+v,0) + (c.extraPaid||0);
+    const remainingBalance = c.principal * (c.paySchedule.length ? remainingMonths/c.paySchedule.length : 0);
+    const futureInterest = Math.max(0, remainingToPay - remainingBalance);
+    const interestPaidSoFar = Math.max(0, paidTotal - (c.principal - remainingBalance));
+    const effectiveTermMonths = c.paySchedule.length;
+    const totalCost = paidTotal + remainingToPay;
+    const totalOverpay = Math.max(0, totalCost - c.principal);
+    const pctPaid = effectiveTermMonths>0 ? Math.min(100, Math.round((paidMonths0/effectiveTermMonths)*100)) : 0;
+    return { r:c.rate||0, schedule:[], totalCost, totalOverpay, paidTotal, interestPaidSoFar, remainingBalance, remainingMonths, futureInterest, remainingToPay, pctPaid, effectiveTermMonths };
+  }
   const P = c.principal, M = c.payment;
   let rate = (c.rate!=null && !isNaN(c.rate)) ? c.rate : solveMonthlyRate(P, M, c.termMonths);
   if(rate<=0){
@@ -2668,9 +2684,10 @@ function payCredit(id){
   const c = data.credits.find(c=>c.id===id);
   if(!c) return;
   if(c.monthsPaid >= c.termMonths){ showToast('Кредит уже выплачен'); return; }
+  const paidAmount = (c.paySchedule && c.paySchedule.length) ? (c.paySchedule[c.monthsPaid] ?? c.payment) : c.payment;
   c.monthsPaid += 1;
   const logId = Date.now();
-  data.creditPaymentLog.push({ id: logId, creditId: c.id, amount: c.payment, date: today() });
+  data.creditPaymentLog.push({ id: logId, creditId: c.id, amount: paidAmount, date: today() });
   saveData(); render();
   vibrate(15);
   actionWithUndo(`Платёж по «${c.name}» отмечен`, ()=>{
@@ -3590,7 +3607,7 @@ function render(){
         </div></div>
 
         <div class="credit-row">
-          <span class="credit-meta">ежемесячно ${fmt(c.payment)}</span>
+          <span class="credit-meta">ежемесячно ${fmt(c.paySchedule && c.paySchedule.length ? (c.paySchedule[c.monthsPaid] ?? c.paySchedule[c.paySchedule.length-1]) : c.payment)}</span>
           ${canPayNow ? `<button class="primary" style="width:auto;" onclick="payCredit(${c.id})">Внести платёж</button>` : ''}
           <button class="edit-btn" onclick="editCredit(${c.id})" aria-label="Изменить">✎</button>
           <button class="del-btn" onclick="delCredit(${c.id})" aria-label="Удалить">✕</button>
