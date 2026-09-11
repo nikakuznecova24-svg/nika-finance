@@ -2186,7 +2186,7 @@ function deleteWithUndo(collection, id, label){
   pendingUndo = { type:'array', collection, item, index: idx };
   showUndoToast(label);
 }
-function showUndoToast(label){
+function showUndoToast(label, duration){
   const el = document.getElementById('undo-toast');
   document.getElementById('undo-toast-text').textContent = label;
   document.getElementById('toast').classList.remove('show');
@@ -2195,7 +2195,7 @@ function showUndoToast(label){
   undoTimer = setTimeout(()=>{
     el.classList.remove('show');
     pendingUndo = null;
-  }, 5000);
+  }, duration || 5000);
 }
 function undoDelete(){
   if(!pendingUndo) return;
@@ -2222,9 +2222,9 @@ function deleteBudgetWithUndo(cat){
   pendingUndo = { type:'budget', cat, limit };
   showUndoToast(`Лимит «${cat}» удалён`);
 }
-function actionWithUndo(label, undoFn){
+function actionWithUndo(label, undoFn, duration){
   pendingUndo = { type:'action', undo: undoFn };
-  showUndoToast(label);
+  showUndoToast(label, duration);
 }
 
 function shakeField(id){
@@ -2676,7 +2676,7 @@ function payCredit(id){
     const cc = data.credits.find(cc=>cc.id===id);
     if(cc) cc.monthsPaid -= 1;
     data.creditPaymentLog = data.creditPaymentLog.filter(p=>p.id!==logId);
-  });
+  }, 10000);
 }
 let openSimulatorId = null;
 let openCreditDetailsId = null;
