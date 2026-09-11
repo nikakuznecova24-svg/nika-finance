@@ -1186,7 +1186,6 @@
   <div class="section-head">
     <div>
       <div class="section-title emphasis">Все цели</div>
-      <div class="section-sub">на что копите — с прогрессом</div>
     </div>
     <div class="see-all" onclick="toggleForm('form-goal')">+ цель</div>
   </div>
@@ -1764,6 +1763,8 @@ function renderPlanScale(){
   const minVal = parseFloat(minEl.value) || 0;
   const optVal = parseFloat(optEl.value) || 0;
   const maxVal = parseFloat(maxEl.value) || 0;
+  const barWrap = document.querySelector('.plan-total-bar');
+  if(barWrap) barWrap.style.display = (minVal||optVal||maxVal) ? '' : 'none';
   document.getElementById('plan-mark-min').textContent = minVal>0 ? fmt(minVal) : '—';
   document.getElementById('plan-mark-opt').textContent = optVal>0 ? fmt(optVal) : '—';
   document.getElementById('plan-mark-max').textContent = maxVal>0 ? fmt(maxVal) : '—';
