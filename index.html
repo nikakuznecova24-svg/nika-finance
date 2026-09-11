@@ -1275,7 +1275,7 @@
       <input type="number" id="card-limit" placeholder="Лимит, ₽">
     </div>
     <div class="form-row">
-      <input type="number" id="card-used" placeholder="Уже потрачено, ₽">
+      <input type="number" id="card-used" placeholder="Сколько осталось на карте, ₽">
       <input type="number" id="card-min-payment" placeholder="Обязательный платёж, ₽">
     </div>
     <div class="form-row">
@@ -2794,7 +2794,8 @@ let editingCardId = null;
 function addCard(){
   const name = document.getElementById('card-name').value.trim();
   const limit = parseFloat(document.getElementById('card-limit').value);
-  const used = parseFloat(document.getElementById('card-used').value) || 0;
+  const remaining = parseFloat(document.getElementById('card-used').value) || 0;
+  const used = Math.max(0, limit - remaining);
   const minPayment = parseFloat(document.getElementById('card-min-payment').value) || 0;
   const graceEnd = document.getElementById('card-grace-end').value || null;
   if(!name){ shakeField('card-name'); return; }
@@ -2824,7 +2825,7 @@ function editCard(id){
   editingCardId = id;
   document.getElementById('card-name').value = c.name;
   document.getElementById('card-limit').value = c.limit;
-  document.getElementById('card-used').value = c.used;
+  document.getElementById('card-used').value = Math.max(0, c.limit - c.used);
   document.getElementById('card-min-payment').value = c.minPayment || '';
   document.getElementById('card-grace-end').value = c.graceEnd || '';
   document.getElementById('card-submit-btn').textContent = 'Сохранить изменения';
