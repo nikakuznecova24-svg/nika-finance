@@ -792,6 +792,7 @@
   .plan-list-name{font-weight:600;flex:1;min-width:0;}
   .plan-list-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
   .plan-list-nums{display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--ink-soft);}
+  .plan-spend-total-row{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--ink);font-weight:600;}
   .plan-list-nums b{color:var(--ink);}
 
   .section-title.emphasis{font-size:23px;}
@@ -1119,6 +1120,7 @@
   <div class="card">
     <div class="goal-name" style="margin-bottom:10px;">На что потрачу</div>
     <div id="plan-spend-list"></div>
+    <div id="plan-spend-total" style="display:none;"></div>
     <div class="form-row" style="margin-top:10px;">
       <input type="text" id="plan-spend-text" placeholder="Пункт плана">
       <input type="number" id="plan-spend-amount" placeholder="Запланировано, ₽">
@@ -3865,6 +3867,18 @@ function render(){
       </div>`;
     }).join('');
   lastAddedPlanSpend = null;
+
+  const spendTotalEl = document.getElementById('plan-spend-total');
+  if(plan.spendItems.length===0){
+    spendTotalEl.style.display = 'none';
+  }else{
+    const totalPlan = plan.spendItems.reduce((s,i)=>s+(i.amount||0),0);
+    const totalActual = plan.spendItems.reduce((s,i)=>s+(i.actual||0),0);
+    const totalOver = plan.optimum>0 && totalPlan > plan.optimum;
+    spendTotalEl.style.display = 'flex';
+    spendTotalEl.className = 'plan-list-nums plan-spend-total-row';
+    spendTotalEl.innerHTML = `<span>факт: <b>${fmt(totalActual)}</b></span><span>план: <b style="${totalOver ? 'color:var(--red);' : ''}">${fmt(totalPlan)}</b></span>`;
+  }
 
   // goals
   const goalSpotlight = document.getElementById('goal-spotlight');
