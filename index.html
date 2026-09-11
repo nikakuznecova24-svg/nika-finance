@@ -296,7 +296,7 @@
   button.primary{
     width:100%;border:none;border-radius:12px;padding:11px;
     font-family:'Inter';font-weight:600;font-size:14px;cursor:pointer;
-    background:var(--ink);color:var(--on-ink);
+    background:var(--amber);color:var(--on-ink);
   }
   button.primary:active{opacity:.85;}
   button.secondary{
@@ -354,7 +354,7 @@
     background:var(--card);color:var(--ink-soft);font-family:'Inter';font-weight:600;font-size:13px;
     cursor:pointer;transition:background-color .15s ease, color .15s ease;
   }
-  .dyn-range-btn.active{background:var(--ink);color:var(--on-ink);border-color:var(--ink);}
+  .dyn-range-btn.active{background:var(--amber);color:var(--on-ink);border-color:var(--amber);}
   .dyn-range-lbl{font-size:12px;color:var(--ink-soft);margin-left:2px;}
   .dyn-summary{margin-bottom:12px;}
   .dyn-mini-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
@@ -868,7 +868,7 @@
     background:var(--card);font-family:'Inter';font-weight:600;font-size:13px;
     color:var(--ink-soft);cursor:pointer;transition:background-color .15s ease, color .15s ease;
   }
-  .subtab-btn.active{background:var(--ink);color:var(--on-ink);border-color:var(--ink);}
+  .subtab-btn.active{background:var(--amber);color:var(--on-ink);border-color:var(--amber);}
   .nested-subtabs{margin-bottom:14px;}
   .nested-subtabs .subtab-btn{padding:7px;font-size:12px;border-radius:10px;background:var(--card-2);}
   .nested-subtabs .subtab-btn.active{background:var(--card);color:var(--ink);border-color:var(--ink);}
@@ -906,7 +906,7 @@
     display:flex;align-items:center;justify-content:center;
     transition:background-color .25s ease, transform .2s ease;
   }
-  .tabbar-btn.active .tabbar-icon-wrap{background:var(--ink);transform:translateY(-1px);}
+  .tabbar-btn.active .tabbar-icon-wrap{background:var(--amber);transform:translateY(-1px);}
   .tabbar-btn.active .tabbar-icon-wrap .tabbar-icon{color:var(--on-ink);}
   .tabbar-icon{width:20px;height:20px;transition:color .2s ease;}
   .tabbar-lbl{font-size:10.5px;font-weight:600;}
@@ -1167,7 +1167,7 @@
   <div class="section-head" style="margin-top:0;padding-top:0;border-top:none;">
     <div>
       <div class="section-title emphasis">Подушка безопасности</div>
-      <div class="section-sub">фонд свободы и смелости — не просто «деньги на чёрный день»</div>
+      <div class="section-sub">фонд свободы и смелости на любой случай жизни</div>
     </div>
   </div>
 
@@ -3262,7 +3262,7 @@ function renderCushion(){
       if(topReached.months>=12){
         cushionInsight = `Ты в зоне полной финансовой свободы — твоя подушка держит тебя увереннее, чем кажется.`;
       }else{
-        cushionInsight = `Уровень «${topReached.title.split('·')[1].trim()}» уже твой — это настоящая опора, а не просто цифра в приложении.`;
+        cushionInsight = `Уровень «${topReached.title.split('·')[1].trim()}» уже твой — это настоящая опора для твоих решений.`;
       }
     }else{
       cushionInsight = `Каждый рубль в подушке — это чуть больше смелости в решениях. Ты уже начала.`;
@@ -3867,7 +3867,7 @@ function render(){
     const completedCount = data.goals.filter(g=>g.saved>=g.target).length;
     const inProgress = data.goals.filter(g=>g.saved<g.target && g.saved>0);
     if(completedCount>0){
-      goalsInsight = `Ты уже закрыла <b>${completedCount}</b> ${completedCount===1?'цель':completedCount<5?'цели':'целей'} — это реальный результат, а не просто мечты.`;
+      goalsInsight = `Ты уже закрыла <b>${completedCount}</b> ${completedCount===1?'цель':completedCount<5?'цели':'целей'} — это результат, который можно потрогать.`;
     }else if(inProgress.length>0){
       const closest = [...inProgress].sort((a,b)=> b.saved/b.target - a.saved/a.target)[0];
       const pct = Math.round((closest.saved/closest.target)*100);
