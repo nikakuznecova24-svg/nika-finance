@@ -497,6 +497,7 @@
   .loan-block.past{background:var(--tag-bg-sage);}
   .loan-block.future{background:var(--tag-bg-amber);}
   .loan-block-lbl{font-size:10.5px;color:var(--ink-soft);margin-bottom:4px;}
+  .loan-info-btn{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--ink-soft);color:var(--on-ink);font-size:9px;font-weight:700;font-style:normal;line-height:1;vertical-align:middle;margin-left:3px;cursor:pointer;}
   .loan-block-row{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;}
   .loan-block-row span{font-weight:600;}
   .loan-neg{color:var(--red);font-weight:700;}
@@ -3570,7 +3571,7 @@ function render(){
 
         <div class="loan-blocks ${detailsOpen ? 'open' : ''}" id="loan-blocks-${c.id}"><div>
           <div class="loan-block total">
-            <div class="loan-block-lbl">Полная стоимость / переплата всего</div>
+            <div class="loan-block-lbl">Полная стоимость / переплата всего <span class="loan-info-btn" onclick="event.stopPropagation(); showToast('тело кредита: ${fmt(c.principal)}')">!</span></div>
             <div class="loan-block-row"><span>${fmt(m.totalCost)}</span><b class="loan-neg">${fmt(m.totalOverpay)}</b></div>
           </div>
           <div class="loan-block past">
