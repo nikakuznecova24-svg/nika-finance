@@ -3642,7 +3642,7 @@ function render(){
 
         <div class="credit-remaining-display">
           <div class="credit-remaining-num">${fmt(m.remainingToPay)}</div>
-          <div class="credit-remaining-lbl">осталось · платёж <span class="${dueSoon?'due-soon-text':''}">${c.day}-го числа</span></div>
+          <div class="credit-remaining-lbl">платёж <span class="${dueSoon?'due-soon-text':''}">${c.day}-го числа</span></div>
         </div>
         <div class="credit-meta-sub">${c.monthsPaid}/${m.effectiveTermMonths} мес. · ежемесячно ${fmt(c.paySchedule && c.paySchedule.length ? (c.paySchedule[c.monthsPaid] ?? c.paySchedule[c.paySchedule.length-1]) : c.payment)}</div>
 
