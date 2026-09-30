@@ -1270,6 +1270,9 @@
       <input type="number" id="credit-paid-months" placeholder="Уже плачу, мес.">
       <input type="number" id="credit-day" placeholder="Число платежа (1–28)" min="1" max="28">
     </div>
+    <div class="form-row">
+      <input type="number" id="credit-balance" placeholder="Остаток долга сейчас, ₽ (можно изменить)" step="0.01">
+    </div>
     <button class="primary" id="credit-submit-btn" onclick="addCredit()">Добавить кредит</button>
   </div></div>
   <div id="credit-spotlight"></div>
@@ -1640,7 +1643,10 @@ function getLoanMetrics(c){
     const remainingMonths = remainingArr.length;
     const remainingToPay = remainingArr.reduce((s,v)=>s+v,0);
     const paidTotal = pastArr.reduce((s,v)=>s+v,0) + (c.extraPaid||0);
-    const remainingBalance = c.principal * (c.paySchedule.length ? remainingMonths/c.paySchedule.length : 0);
+    const balanceAnchor = (c.balanceMonths!=null) ? c.balanceMonths : paidMonths0;
+    const remainingBalance = (c.balance>0 && balanceAnchor===paidMonths0)
+      ? c.balance
+      : c.principal * (c.paySchedule.length ? remainingMonths/c.paySchedule.length : 0);
     const futureInterest = Math.max(0, remainingToPay - remainingBalance);
     const interestPaidSoFar = Math.max(0, paidTotal - (c.principal - remainingBalance));
     const effectiveTermMonths = c.paySchedule.length;
@@ -1659,15 +1665,30 @@ function getLoanMetrics(c){
     }
   }
   const paidMonths = Math.max(0, c.monthsPaid||0);
-  const pastSchedule = buildSchedule(P, M, paidMonths, rate);
-  const nominalBalance = pastSchedule.length ? pastSchedule[pastSchedule.length-1].balance : P;
+  let pastSchedule, nominalBalance;
+  if(c.balance>0){
+    // остаток задан вручную: считаем от него, а не от суммы кредита
+    const anchor = Math.min(paidMonths, (c.balanceMonths!=null) ? c.balanceMonths : paidMonths);
+    const monthsLeftAtAnchor = Math.max(1, c.termMonths - anchor);
+    const rateFromBalance = solveMonthlyRate(c.balance, M, monthsLeftAtAnchor);
+    rate = rateFromBalance;
+    const walked = buildSchedule(c.balance, M, Math.max(0, paidMonths - anchor), rate);
+    const filler = { interest:0, principalPaid:0, balance:0 };
+    pastSchedule = new Array(anchor).fill(filler).concat(walked);
+    nominalBalance = walked.length ? walked[walked.length-1].balance : c.balance;
+  }else{
+    pastSchedule = buildSchedule(P, M, paidMonths, rate);
+    nominalBalance = pastSchedule.length ? pastSchedule[pastSchedule.length-1].balance : P;
+  }
   const extraPaid = c.extraPaid || 0;
   const remainingBalance = Math.max(0, nominalBalance - extraPaid);
   const futureSchedule = buildSchedule(remainingBalance, M, 600, rate);
   const remainingMonths = futureSchedule.length;
   const futureInterest = futureSchedule.reduce((s,row)=>s+row.interest,0);
-  const interestPaidSoFar = pastSchedule.reduce((s,row)=>s+row.interest,0);
   const paidTotal = M*paidMonths + extraPaid;
+  const interestPaidSoFar = c.balance>0
+    ? Math.max(0, paidTotal - Math.max(0, P - remainingBalance))
+    : pastSchedule.reduce((s,row)=>s+row.interest,0);
   const effectiveTermMonths = paidMonths + remainingMonths;
   const totalCost = paidTotal + futureInterest + remainingBalance;
   const totalOverpay = Math.max(0, totalCost - P);
@@ -2411,7 +2432,7 @@ document.addEventListener('keydown', (e)=>{
     'inc-amount':addIncome,'inc-custom-source':addIncome,'inc-comment':addIncome,
     'goal-name':addGoal,'goal-target':addGoal,
     'credit-name':addCredit,'credit-principal':addCredit,'credit-term':addCredit,'credit-paid-months':addCredit,
-    'credit-payment':addCredit,'credit-day':addCredit,
+    'credit-payment':addCredit,'credit-day':addCredit,'credit-balance':addCredit,
     'plan-spend-text':addPlanSpend,'plan-spend-amount':addPlanSpend,'plan-spend-actual':addPlanSpend
   };
   if(single[id]){ e.preventDefault(); single[id](); return; }
@@ -2624,6 +2645,7 @@ function delIncome(id){
 }
 
 let editingCreditId = null;
+let editingCreditBalanceShown = null;
 function addCredit(){
   const name = document.getElementById('credit-name').value.trim();
   const principal = parseFloat(document.getElementById('credit-principal').value);
@@ -2631,6 +2653,7 @@ function addCredit(){
   const termMonths = parseInt(document.getElementById('credit-term').value, 10);
   let monthsPaid = parseInt(document.getElementById('credit-paid-months').value, 10);
   let day = parseInt(document.getElementById('credit-day').value, 10);
+  const balanceInput = parseFloat(document.getElementById('credit-balance').value);
   if(!name){ shakeField('credit-name'); return; }
   if(!principal || principal<=0){ shakeField('credit-principal'); return; }
   if(!payment || payment<=0){ shakeField('credit-payment'); return; }
@@ -2643,13 +2666,21 @@ function addCredit(){
   if(editingCreditId){
     const c = data.credits.find(c=>c.id===editingCreditId);
     Object.assign(c, { name, principal, payment, termMonths, monthsPaid, day, rate });
+    if(!(balanceInput>0)){
+      delete c.balance; delete c.balanceMonths;
+    }else if(editingCreditBalanceShown==null || Math.abs(balanceInput - editingCreditBalanceShown) > 0.5){
+      c.balance = balanceInput; c.balanceMonths = monthsPaid;
+    }
     lastAddedCredit = editingCreditId;
     editingCreditId = null;
+    editingCreditBalanceShown = null;
     document.getElementById('credit-submit-btn').textContent = 'Добавить кредит';
     showToast('Кредит обновлён');
   }else{
     const id = Date.now();
-    data.credits.push({ id, name, principal, payment, termMonths, monthsPaid, day, rate, extraPaid: 0 });
+    const newCredit = { id, name, principal, payment, termMonths, monthsPaid, day, rate, extraPaid: 0 };
+    if(balanceInput>0){ newCredit.balance = balanceInput; newCredit.balanceMonths = monthsPaid; }
+    data.credits.push(newCredit);
     lastAddedCredit = id;
     showToast('Кредит добавлен');
   }
@@ -2659,6 +2690,7 @@ function addCredit(){
   document.getElementById('credit-term').value='';
   document.getElementById('credit-paid-months').value='';
   document.getElementById('credit-day').value='';
+  document.getElementById('credit-balance').value='';
   toggleForm('form-credit');
   saveData(); render();
 }
@@ -2672,6 +2704,8 @@ function editCredit(id){
   document.getElementById('credit-term').value = c.termMonths;
   document.getElementById('credit-paid-months').value = c.monthsPaid;
   document.getElementById('credit-day').value = c.day;
+  editingCreditBalanceShown = Math.round(getLoanMetrics(c).remainingBalance*100)/100;
+  document.getElementById('credit-balance').value = editingCreditBalanceShown;
   document.getElementById('credit-submit-btn').textContent = 'Сохранить изменения';
   switchPage('credits');
   switchBalanceSub('obligations'); switchObligationSub('credits');
