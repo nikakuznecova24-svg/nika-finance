@@ -1475,6 +1475,14 @@
 
   <div class="section-head">
     <div>
+      <div class="section-title">Погашение кредитов</div>
+      <div class="section-sub">сколько ушло на платежи по кредитам</div>
+    </div>
+  </div>
+  <div class="card" id="credit-payments-card"></div>
+
+  <div class="section-head">
+    <div>
       <div class="section-title">План vs Факт</div>
       <div class="section-sub">как реальность соотносится с ожиданиями месяца</div>
     </div>
@@ -3236,6 +3244,45 @@ function renderReport(){
     }
   });
   if(interestPaidThisMonth>0) parts.push(`заплатила банку процентами примерно <b>${fmt(interestPaidThisMonth)}</b>`);
+
+  // Погашение кредитов — сколько ушло на платежи
+  const creditPayCard = document.getElementById('credit-payments-card');
+  if(creditPayCard){
+    const thisMonthPayments = data.creditPaymentLog.filter(p=>p.date.slice(0,7)===monthKey);
+    const prevMonthPayments = data.creditPaymentLog.filter(p=>p.date.slice(0,7)===prevMonthKey);
+    const totalThis = thisMonthPayments.reduce((s,p)=>s+p.amount,0);
+    const totalPrev = prevMonthPayments.reduce((s,p)=>s+p.amount,0);
+    const totalAllTime = data.creditPaymentLog.reduce((s,p)=>s+p.amount,0);
+
+    if(totalAllTime===0){
+      creditPayCard.innerHTML = '<p class="empty">Появится, как только добавишь платёж по кредиту.</p>';
+    }else{
+      const byCredit = {};
+      thisMonthPayments.forEach(p=>{
+        const c = data.credits.find(c=>c.id===p.creditId);
+        const name = c ? c.name : 'Кредит (закрыт)';
+        byCredit[name] = (byCredit[name]||0) + p.amount;
+      });
+      const rows = Object.entries(byCredit).sort((a,b)=>b[1]-a[1]).map(([name,amt])=>`
+        <div class="cat-compare-row">
+          <div class="cat-icon-badge" style="background:var(--tag-bg-sage);">💳</div>
+          <div class="cat-compare-info">
+            <div class="cat-compare-name">${name}</div>
+          </div>
+          <div class="cat-compare-right"><b>${fmt(amt)}</b></div>
+        </div>`).join('');
+      creditPayCard.innerHTML = `
+        <div class="cat-compare-row" style="border-bottom:2px solid var(--line);">
+          <div class="cat-compare-info">
+            <div class="cat-compare-name">Всего в этом месяце</div>
+            <div class="cat-compare-amt">прошлый месяц — ${fmt(totalPrev)} · всего с начала учёта — ${fmt(totalAllTime)}</div>
+          </div>
+          <div class="cat-compare-right"><b>${fmt(totalThis)}</b></div>
+        </div>
+        ${rows}
+      `;
+    }
+  }
 
   const byCatMonth = {};
   monthExp.forEach(e=>{ byCatMonth[e.category] = (byCatMonth[e.category]||0) + e.amount; });
