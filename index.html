@@ -1197,7 +1197,6 @@
   <div class="card">
     <div class="goal-name" style="margin-bottom:2px;">Накоплено в подушке</div>
     <div class="cushion-amount" id="cushion-amount" onclick="openCushionHistoryModal()" style="cursor:pointer;">0 ₽</div>
-    <div id="cushion-history-hint" style="font-size:11.5px;color:var(--ink-soft);cursor:pointer;" onclick="openCushionHistoryModal()"></div>
     <div class="form-row" style="margin-top:12px;">
       <input type="number" id="cushion-input" placeholder="Сумма, ₽">
       <button class="primary" style="width:auto;" onclick="addCushion()">Отложить</button>
@@ -3547,8 +3546,6 @@ function renderCushion(){
   if(!amountEl) return;
   const saved = data.cushion.saved || 0;
   amountEl.textContent = fmt(saved);
-  const hintEl = document.getElementById('cushion-history-hint');
-  if(hintEl) hintEl.textContent = data.cushionLog.length>0 ? `история (${data.cushionLog.length}) ›` : '';
 }
 function openCushionHistoryModal(){
   document.getElementById('list-modal-title').textContent = 'История подушки';
