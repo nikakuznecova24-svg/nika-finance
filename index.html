@@ -489,9 +489,7 @@
   }
   .credit-remaining-display{text-align:center;padding:2px 0 6px;}
   .credit-remaining-num{font-size:20px;font-weight:700;letter-spacing:-.01em;}
-  .credit-remaining-total{font-size:12px;font-weight:500;color:var(--ink-soft);}
   .credit-remaining-lbl{font-size:10.5px;color:var(--ink-soft);margin-top:1px;}
-  .credit-meta-sub{font-size:10px;color:var(--ink-soft);opacity:.75;text-align:center;margin-bottom:8px;}
   .credit-pay-btn{
     width:auto;border:none;border-radius:12px;padding:9px 16px;
     font-family:'Inter';font-weight:600;font-size:13px;cursor:pointer;
@@ -2794,7 +2792,6 @@ function payCredit(id){
   }, 10000);
 }
 let openSimulatorId = null;
-let openCreditDetailsId = null;
 let openCreditMenuId = null;
 function toggleCreditMenu(id){
   openCreditMenuId = openCreditMenuId===id ? null : id;
@@ -2859,19 +2856,44 @@ function toggleSimulator(id){
     }, 320);
   }
 }
-function toggleCreditDetails(id){
-  const el = document.getElementById('loan-blocks-'+id);
-  const btn = document.getElementById('loan-details-btn-'+id);
-  if(!el) return;
-  const wasOpen = openCreditDetailsId===id;
-  openCreditDetailsId = wasOpen ? null : id;
-  el.classList.toggle('open', !wasOpen);
-  if(btn){
-    const label = btn.querySelector('.loan-details-label');
-    const arrow = btn.querySelector('.loan-details-arrow');
-    if(label) label.textContent = !wasOpen ? 'Скрыть подробности' : 'Подробнее о переплате';
-    if(arrow) arrow.classList.toggle('open', !wasOpen);
-  }
+function openCreditDetailModal(id){
+  const c = data.credits.find(c=>c.id===id);
+  if(!c) return;
+  document.getElementById('list-modal-title').textContent = c.name;
+  renderCreditDetailModalBody(id);
+  document.getElementById('list-modal').classList.add('open');
+}
+function renderCreditDetailModalBody(id){
+  const c = data.credits.find(c=>c.id===id);
+  const body = document.getElementById('list-modal-body');
+  if(!c || !body) return;
+  const m = getLoanMetrics(c);
+  const isDone = m.remainingMonths<=0;
+  const simOpen = openSimulatorId===c.id;
+  body.innerHTML = `
+    <div class="loan-block total">
+      <div class="loan-block-lbl">Полная стоимость / переплата всего <span class="loan-info-btn" onclick="showToast('тело кредита: ${fmt(c.principal)}')">!</span></div>
+      <div class="loan-block-row"><span>${fmt(m.totalCost)}</span><b class="loan-neg">${fmt(m.totalOverpay)}</b></div>
+    </div>
+    <div class="loan-block past">
+      <div class="loan-block-lbl">Уже выплачено / из них проценты</div>
+      <div class="loan-block-row"><span>${fmt(m.paidTotal)}</span><b class="loan-neg-past">${fmt(m.interestPaidSoFar)}</b></div>
+    </div>
+    <div class="loan-block future">
+      <div class="loan-block-lbl">Осталось выплатить / будущая переплата</div>
+      <div class="loan-block-row"><span>${fmt(m.remainingToPay)}</span><b class="loan-neg">${fmt(m.futureInterest)}</b></div>
+    </div>
+    ${!isDone ? `
+    <button class="sim-toggle-btn" onclick="toggleSimulator(${c.id})">🧮 Калькулятор досрочного погашения</button>
+    <div class="sim-panel ${simOpen ? 'open' : ''}" id="sim-panel-${c.id}"><div>
+      <div class="sim-panel-lbl">Что если внести сверху разом:</div>
+      <div class="form-row">
+        <input type="number" id="sim-extra-${c.id}" max="${Math.floor(m.remainingBalance)}" placeholder="Сумма, ₽ (макс. ${fmt(m.remainingBalance)})">
+        <button class="primary" style="width:auto;" onclick="runSimulator(${c.id})">Рассчитать</button>
+      </div>
+      <div class="sim-result" id="sim-result-${c.id}" style="display:none;"></div>
+    </div></div>` : ''}
+  `;
 }
 function runSimulator(id){
   const input = document.getElementById('sim-extra-'+id);
@@ -3744,8 +3766,6 @@ function render(){
       const daysLeft = _daysUntil(c.day);
       const dueSoon = daysLeft>=0 && daysLeft<=5 && !isDone;
       if(dueSoon) dueSoonList.push({ name:c.name, daysLeft, amount:c.payment });
-      const simOpen = openSimulatorId===c.id;
-      const detailsOpen = openCreditDetailsId===c.id;
       const menuOpen = openCreditMenuId===c.id;
       const paidThisCycle = data.creditPaymentLog.some(p=>p.creditId===c.id && !p.early && p.date.slice(0,7)===monthKey);
       const canPayNow = !isDone && !paidThisCycle && daysLeft>=0 && daysLeft<=7;
@@ -3757,13 +3777,13 @@ function render(){
       const minTermNeeded = Math.ceil(c.principal / c.payment);
       const numbersInconsistent = m.r<=0 && (c.payment*c.termMonths) < c.principal;
       return `
-      <div class="credit-card ${c.id===lastAddedCredit?'flash-new':''}">
+      <div class="credit-card ${c.id===lastAddedCredit?'flash-new':''}" onclick="openCreditDetailModal(${c.id})" style="cursor:pointer;">
         <div class="credit-top">
           <div class="credit-name">${c.name}${isDone ? '<span class="due-tag done">выплачено</span>' : ''}</div>
-          <button class="edit-btn credit-menu-btn" onclick="toggleCreditMenu(${c.id})" aria-label="Ещё">⋯</button>
+          <button class="edit-btn credit-menu-btn" onclick="event.stopPropagation(); toggleCreditMenu(${c.id})" aria-label="Ещё">⋯</button>
         </div>
         ${menuOpen ? `
-        <div class="credit-menu-row">
+        <div class="credit-menu-row" onclick="event.stopPropagation();">
           <button class="edit-btn" onclick="editCredit(${c.id})" aria-label="Изменить">✎ изменить</button>
           <button class="del-btn" onclick="delCredit(${c.id})" aria-label="Удалить">✕ удалить</button>
         </div>` : ''}
@@ -3775,39 +3795,11 @@ function render(){
         </div>` : ''}
 
         <div class="credit-remaining-display">
-          <div class="credit-remaining-num">${fmt(m.remainingBalance)} <span class="credit-remaining-total">· ${fmt(m.remainingToPay)} с %</span></div>
-          <div class="credit-remaining-lbl">платёж <span class="${dueSoon?'due-soon-text':''}">${c.day}-го числа</span></div>
+          <div class="credit-remaining-num">${fmt(m.remainingBalance)}</div>
+          <div class="credit-remaining-lbl">платёж <span class="${dueSoon?'due-soon-text':''}">${c.day}-го числа</span> · ${fmt(c.paySchedule && c.paySchedule.length ? (c.paySchedule[c.monthsPaid] ?? c.paySchedule[c.paySchedule.length-1]) : c.payment)}</div>
         </div>
-        <div class="credit-meta-sub">${c.monthsPaid}/${m.effectiveTermMonths} мес. · ежемесячно ${fmt(c.paySchedule && c.paySchedule.length ? (c.paySchedule[c.monthsPaid] ?? c.paySchedule[c.paySchedule.length-1]) : c.payment)}</div>
 
-        <button class="loan-details-toggle" id="loan-details-btn-${c.id}" onclick="toggleCreditDetails(${c.id})"><span class="loan-details-label">${detailsOpen ? 'Скрыть подробности' : 'Подробнее о переплате'}</span> <span class="loan-details-arrow ${detailsOpen?'open':''}">›</span></button>
-
-        <div class="loan-blocks ${detailsOpen ? 'open' : ''}" id="loan-blocks-${c.id}"><div>
-          <div class="loan-block total">
-            <div class="loan-block-lbl">Полная стоимость / переплата всего <span class="loan-info-btn" onclick="event.stopPropagation(); showToast('тело кредита: ${fmt(c.principal)}')">!</span></div>
-            <div class="loan-block-row"><span>${fmt(m.totalCost)}</span><b class="loan-neg">${fmt(m.totalOverpay)}</b></div>
-          </div>
-          <div class="loan-block past">
-            <div class="loan-block-lbl">Уже выплачено / из них проценты</div>
-            <div class="loan-block-row"><span>${fmt(m.paidTotal)}</span><b class="loan-neg-past">${fmt(m.interestPaidSoFar)}</b></div>
-          </div>
-          <div class="loan-block future">
-            <div class="loan-block-lbl">Осталось выплатить / будущая переплата</div>
-            <div class="loan-block-row"><span>${fmt(m.remainingToPay)}</span><b class="loan-neg">${fmt(m.futureInterest)}</b></div>
-          </div>
-          ${!isDone ? `
-          <button class="sim-toggle-btn" onclick="toggleSimulator(${c.id})">🧮 Калькулятор досрочного погашения</button>
-          <div class="sim-panel ${simOpen ? 'open' : ''}" id="sim-panel-${c.id}"><div>
-            <div class="sim-panel-lbl">Что если внести сверху разом:</div>
-            <div class="form-row">
-              <input type="number" id="sim-extra-${c.id}" max="${Math.floor(m.remainingBalance)}" placeholder="Сумма, ₽ (макс. ${fmt(m.remainingBalance)})">
-              <button class="primary" style="width:auto;" onclick="runSimulator(${c.id})">Рассчитать</button>
-            </div>
-            <div class="sim-result" id="sim-result-${c.id}" style="display:none;"></div>
-          </div></div>` : ''}
-        </div></div>
-
-        ${canPayNow ? `<div class="credit-row"><button class="credit-pay-btn" onclick="payCredit(${c.id})">Внести платёж</button></div>` : ''}
+        ${canPayNow ? `<div class="credit-row" onclick="event.stopPropagation();"><button class="credit-pay-btn" onclick="payCredit(${c.id})">Внести платёж</button></div>` : ''}
         ${payStatus ? `<div class="credit-pay-status">${payStatus}</div>` : ''}
       </div>`;
     }).join('');
