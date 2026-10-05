@@ -634,8 +634,9 @@
   }
   .modal-overlay.open{opacity:1;pointer-events:auto;}
   .modal-card{
-    background:var(--card-2);color:var(--ink);border-radius:20px;padding:22px;max-width:320px;width:100%;
+    background:#F5F3EF;color:var(--ink);border-radius:20px;padding:22px;max-width:320px;width:100%;
     transform:scale(.94);transition:transform .2s ease;overflow:hidden;
+    box-shadow:0 20px 50px rgba(30,27,24,.18);
   }
   .modal-overlay.open .modal-card{transform:scale(1);}
   .modal-text{font-size:14px;line-height:1.5;margin-bottom:18px;}
@@ -2892,11 +2893,33 @@ function openCreditsSummaryModal(){
     ['Активных кредитов', String(activeCredits.length)],
   ];
   if(nextUp) rows.push(['Ближайший платёж', `${nextUp.name} · ${nextUp.day}-го · ${fmt(nextUp.payment)}`]);
+
+  const tips = [];
+  if(activeCredits.length>1){
+    const withMetrics = activeCredits.map(c=>({ c, m: getLoanMetrics(c) }));
+    const byRate = [...withMetrics].sort((a,b)=>b.m.r-a.m.r)[0];
+    if(byRate.m.r>0){
+      tips.push(`самая дорогая ставка — у «${byRate.c.name}» (~${Math.round(byRate.m.r*1200)/10}% годовых). свободные деньги выгоднее всего направлять туда — так переплата сократится быстрее всего`);
+    }
+    const byInterest = [...withMetrics].sort((a,b)=>b.m.futureInterest-a.m.futureInterest)[0];
+    if(byInterest.m.futureInterest>0 && byInterest.c.id!==byRate.c.id){
+      tips.push(`больше всего процентов ещё предстоит заплатить по «${byInterest.c.name}» — ${fmt(byInterest.m.futureInterest)}. чем раньше закроешь его, тем больше сэкономишь`);
+    }
+    const closest = [...withMetrics].filter(x=>x.m.remainingBalance>0).sort((a,b)=>b.m.pctPaid-a.m.pctPaid)[0];
+    if(closest && closest.m.pctPaid>0){
+      tips.push(`«${closest.c.name}» уже выплачен на ${closest.m.pctPaid}% — осталось всего ${fmt(closest.m.remainingBalance)}. закрыть его быстро — лёгкая победа`);
+    }
+  }
+
   body.innerHTML = rows.map(([label,val])=>`
     <div class="cat-compare-row">
       <div class="cat-compare-info"><div class="cat-compare-name">${label}</div></div>
       <div class="cat-compare-right"><b>${val}</b></div>
-    </div>`).join('');
+    </div>`).join('')
+  + (tips.length>0 ? `
+    <div style="font-size:12.5px;font-weight:600;color:var(--ink);margin:16px 0 8px;">на что обратить внимание</div>
+    ${tips.slice(0,3).map(t=>`<div class="advice-item"><div class="advice-icon">💡</div><div class="advice-text">${t}</div></div>`).join('')}
+  ` : '');
   document.getElementById('list-modal').classList.add('open');
 }
 function openCreditDetailModal(id){
