@@ -783,10 +783,12 @@
     background:var(--grad-balance);background-repeat:no-repeat;
     transition:width .6s ease, background-size .6s ease;
   }
-  .plan-scale-marks{display:flex;justify-content:space-between;margin-top:10px;gap:6px;}
-  .plan-scale-mark{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;}
-  .plan-scale-mark:last-child{align-items:flex-end;}
-  .plan-scale-mark:nth-child(2){align-items:center;}
+  .plan-scale-marks{position:relative;height:34px;margin-top:10px;}
+  .plan-scale-mark{
+    position:absolute;top:0;transform:translateX(-50%);
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    white-space:nowrap;transition:left .6s ease;
+  }
   .plan-scale-mark-lbl{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
   .plan-scale-mark-val{font-size:13px;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
@@ -1128,9 +1130,9 @@
       <div class="plan-scale-track"><div class="plan-scale-fill" id="plan-scale-fill" style="width:2%;"></div></div>
     </div>
     <div class="plan-scale-marks">
-      <div class="plan-scale-mark"><span class="plan-scale-mark-lbl">мин</span><span class="plan-scale-mark-val" id="plan-mark-min">—</span></div>
-      <div class="plan-scale-mark"><span class="plan-scale-mark-lbl">оптимум</span><span class="plan-scale-mark-val" id="plan-mark-opt">—</span></div>
-      <div class="plan-scale-mark"><span class="plan-scale-mark-lbl">макс</span><span class="plan-scale-mark-val" id="plan-mark-max">—</span></div>
+      <div class="plan-scale-mark" id="plan-mark-min-wrap" style="left:0%;"><span class="plan-scale-mark-lbl">мин</span><span class="plan-scale-mark-val" id="plan-mark-min">—</span></div>
+      <div class="plan-scale-mark" id="plan-mark-opt-wrap" style="left:50%;"><span class="plan-scale-mark-lbl">оптимум</span><span class="plan-scale-mark-val" id="plan-mark-opt">—</span></div>
+      <div class="plan-scale-mark" id="plan-mark-max-wrap" style="left:100%;"><span class="plan-scale-mark-lbl">макс</span><span class="plan-scale-mark-val" id="plan-mark-max">—</span></div>
     </div>
   </div>
 
@@ -1855,6 +1857,10 @@ function renderPlanScale(){
   document.getElementById('plan-mark-opt').textContent = optVal>0 ? fmt(optVal) : '—';
   document.getElementById('plan-mark-max').textContent = maxVal>0 ? fmt(maxVal) : '—';
   const scaleMax = maxVal || optVal || minVal || 1;
+  const markPct = (v) => Math.max(4, Math.min(96, (v/scaleMax)*100));
+  document.getElementById('plan-mark-min-wrap').style.left = markPct(minVal) + '%';
+  document.getElementById('plan-mark-opt-wrap').style.left = markPct(optVal) + '%';
+  document.getElementById('plan-mark-max-wrap').style.left = markPct(maxVal) + '%';
   const pct = Math.max(2, Math.min(100, Math.round((planScaleCurrent/scaleMax)*100)));
   const fillEl = document.getElementById('plan-scale-fill');
   fillEl.style.width = pct + '%';
