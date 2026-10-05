@@ -461,7 +461,7 @@
   .edit-btn:hover{color:var(--ink);}
 
   /* credits */
-  .credit-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:13px 14px;margin-bottom:8px;box-shadow:0 3px 12px rgba(30,20,15,.045);}
+  .credit-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:13px 14px;margin-bottom:14px;box-shadow:0 3px 12px rgba(30,20,15,.045);}
   .credit-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:6px 12px;}
   .credit-name{font-size:14px;font-weight:600;}
   .credit-meta{font-size:12px;color:var(--ink-soft);}
@@ -3955,7 +3955,6 @@ function render(){
         <div class="debt-item">
           <div class="debt-item-top">
             <div class="debt-item-name">${d.person}</div>
-            <span class="debt-dir-tag ${d.direction}">${d.direction==='owe' ? 'я должна' : 'мне должны'}</span>
             <span class="edit-btn credit-menu-btn" onclick="toggleDebtMenu(${d.id})" style="cursor:pointer;">⋯</span>
           </div>
           ${dMenuOpen ? `
@@ -4033,10 +4032,12 @@ function render(){
     ? '<p class="empty">Распиши, на что уйдёт бюджет месяца — добавь первый пункт.</p>'
     : plan.spendItems.map((i,idx)=>{
       const iconColor = CATEGORY_COLOR_FALLBACK[idx % CATEGORY_COLOR_FALLBACK.length];
+      const planIcons = ['🗝️','✈️','🛍️','💳','🏠','🎁','🍽️','🎯'];
+      const iconEmoji = planIcons[idx % planIcons.length];
       return `
       <div class="plan-list-item ${i.id===lastAddedPlanSpend?'flash-new':''}">
         <div class="plan-list-top">
-          <span class="plan-list-icon" style="background:${iconColor};">✦</span>
+          <span class="plan-list-icon" style="background:${iconColor};">${iconEmoji}</span>
           <span class="plan-list-name">${i.text}</span>
           <span class="plan-list-actions">
             <button class="edit-btn" onclick="editPlanSpend(${i.id})" aria-label="Изменить">✎</button>
