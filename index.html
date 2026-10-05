@@ -3755,7 +3755,7 @@ function render(){
         else if(daysLeft<=7) payStatus = 'ожидаем следующий платёжный цикл';
       }
       const minTermNeeded = Math.ceil(c.principal / c.payment);
-      const numbersInconsistent = m.r<=0 && (c.payment*c.termMonths) <= c.principal;
+      const numbersInconsistent = m.r<=0 && (c.payment*c.termMonths) < c.principal;
       return `
       <div class="credit-card ${c.id===lastAddedCredit?'flash-new':''}">
         <div class="credit-top">
