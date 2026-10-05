@@ -2856,6 +2856,32 @@ function toggleSimulator(id){
     }, 320);
   }
 }
+function openCreditsSummaryModal(){
+  document.getElementById('list-modal-title').textContent = 'Итог по кредитам';
+  const body = document.getElementById('list-modal-body');
+  const activeCredits = data.credits.filter(c=>getLoanMetrics(c).remainingMonths>0);
+  const totalDebt = activeCredits.reduce((s,c)=>s+getLoanMetrics(c).remainingBalance,0);
+  const totalWithInterest = activeCredits.reduce((s,c)=>s+getLoanMetrics(c).remainingToPay,0);
+  const monthlyPayment = activeCredits.reduce((s,c)=>s+(c.paySchedule && c.paySchedule.length ? (c.paySchedule[c.monthsPaid] ?? c.payment) : c.payment),0);
+  const todayDay = new Date().getDate();
+  const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate();
+  const daysUntil = (day) => day >= todayDay ? (day - todayDay) : (daysInMonth - todayDay + day);
+  const nextUp = [...activeCredits].sort((a,b)=>daysUntil(a.day)-daysUntil(b.day))[0];
+  const rows = [
+    ['Общий остаток долга', fmt(totalDebt)],
+    ['Итого с процентами', fmt(totalWithInterest)],
+    ['Переплата процентами', fmt(totalWithInterest - totalDebt)],
+    ['В месяц на платежи', fmt(monthlyPayment)],
+    ['Активных кредитов', String(activeCredits.length)],
+  ];
+  if(nextUp) rows.push(['Ближайший платёж', `${nextUp.name} · ${nextUp.day}-го · ${fmt(nextUp.payment)}`]);
+  body.innerHTML = rows.map(([label,val])=>`
+    <div class="cat-compare-row">
+      <div class="cat-compare-info"><div class="cat-compare-name">${label}</div></div>
+      <div class="cat-compare-right"><b>${val}</b></div>
+    </div>`).join('');
+  document.getElementById('list-modal').classList.add('open');
+}
 function openCreditDetailModal(id){
   const c = data.credits.find(c=>c.id===id);
   if(!c) return;
@@ -3803,6 +3829,20 @@ function render(){
         ${payStatus ? `<div class="credit-pay-status">${payStatus}</div>` : ''}
       </div>`;
     }).join('');
+
+    const activeCredits = data.credits.filter(c=>getLoanMetrics(c).remainingMonths>0);
+    if(activeCredits.length>0){
+      const totalDebt = activeCredits.reduce((s,c)=>s+getLoanMetrics(c).remainingBalance,0);
+      const monthlyPayment = activeCredits.reduce((s,c)=>s+(c.paySchedule && c.paySchedule.length ? (c.paySchedule[c.monthsPaid] ?? c.payment) : c.payment),0);
+      creditList.innerHTML += `
+      <div class="credit-card" onclick="openCreditsSummaryModal()" style="cursor:pointer;">
+        <div class="credit-top"><div class="credit-name">Итог по кредитам</div></div>
+        <div class="credit-remaining-display">
+          <div class="credit-remaining-num">${fmt(totalDebt)}</div>
+          <div class="credit-remaining-lbl">в месяц уходит ${fmt(monthlyPayment)} · ${activeCredits.length} ${activeCredits.length===1?'кредит':activeCredits.length<5?'кредита':'кредитов'}</div>
+        </div>
+      </div>`;
+    }
     lastAddedCredit = null;
   }
 
