@@ -149,13 +149,6 @@
   }
   .pill-add:hover{background:var(--ink);color:var(--on-ink);}
 
-  .insight-card{
-    display:flex;align-items:center;gap:9px;
-    background:var(--tag-bg-sage);border:1px solid var(--line);border-radius:12px;
-    padding:10px 13px;margin-bottom:12px;font-size:12.5px;color:var(--ink);line-height:1.4;
-  }
-  .insight-card .insight-icon{flex-shrink:0;font-size:15px;}
-  .insight-card > span:last-child{flex:1;min-width:0;}
 
   .tabbar-btn{position:relative;}
   .tabbar-btn .tabbar-badge{
@@ -1140,7 +1133,6 @@
     </div>
   </div>
 
-  <div class="insight-card" id="plan-insight-card" style="display:none;"></div>
 
   <div class="card">
     <div class="goal-top-row" style="margin-bottom:10px;">
@@ -1212,7 +1204,6 @@
     </div>
   </div>
 
-  <div class="insight-card" id="cushion-insight-card" style="display:none;"></div>
 
   <div class="section-head">
     <div>
@@ -1231,7 +1222,6 @@
     <button class="primary" id="goal-submit-btn" onclick="addGoal()">Создать цель</button>
   </div></div>
   <div id="goal-spotlight"></div>
-  <div class="insight-card" id="goals-insight-card" style="display:none;"></div>
   <div id="goal-list"></div>
 
   </div>
@@ -1315,7 +1305,6 @@
     </div>
     <button class="primary" id="card-submit-btn" onclick="addCard()">Добавить карту</button>
   </div></div>
-  <div class="insight-card" id="cards-insight-card" style="display:none;"></div>
   <div id="card-list"></div>
 
   </div>
@@ -1346,7 +1335,6 @@
     </div>
     <button class="primary" id="debt-submit-btn" onclick="addDebt()">Добавить долг</button>
   </div></div>
-  <div class="insight-card" id="debts-insight-card" style="display:none;"></div>
   <div id="debt-list"></div>
 
   </div>
@@ -3558,43 +3546,6 @@ function renderCushion(){
   if(!amountEl) return;
   const saved = data.cushion.saved || 0;
   amountEl.textContent = fmt(saved);
-
-  // baseline monthly need from last 3 months of real spending
-  const months = [];
-  for(let i=2;i>=0;i--){ const d=new Date(); d.setMonth(d.getMonth()-i); months.push(monthKeyFromDate(d)); }
-  const totals = months.map(mk=> data.expenses.filter(e=>e.date.slice(0,7)===mk).reduce((s,e)=>s+e.amount,0));
-  const monthsWithData = totals.filter(t=>t>0);
-  const avgMonthly = monthsWithData.length>0 ? monthsWithData.reduce((s,t)=>s+t,0)/monthsWithData.length : 0;
-
-  const levels = [
-    { emoji:'🌱', title:'1 уровень · База', desc:'подушка покрывает 3 месяца базовых трат', months:3 },
-    { emoji:'🌿', title:'2 уровень · Комфорт', desc:'подушка покрывает 6 месяцев обычной жизни', months:6 },
-    { emoji:'🕊️', title:'3 уровень · Свобода', desc:'подушка покрывает 12+ месяцев полной жизни', months:12 }
-  ];
-
-  const cushionInsightCard = document.getElementById('cushion-insight-card');
-  let cushionInsight = null;
-  if(saved>0 && avgMonthly>0){
-    const reachedLevels = levels.filter(lv => saved >= avgMonthly*lv.months);
-    if(reachedLevels.length>0){
-      const topReached = reachedLevels[reachedLevels.length-1];
-      if(topReached.months>=12){
-        cushionInsight = `Ты в зоне полной финансовой свободы — твоя подушка держит тебя увереннее, чем кажется.`;
-      }else{
-        cushionInsight = `Уровень «${topReached.title.split('·')[1].trim()}» уже твой — это настоящая опора для твоих решений.`;
-      }
-    }else{
-      cushionInsight = `Каждый рубль в подушке — это чуть больше смелости в решениях. Ты уже начала.`;
-    }
-  }else if(saved>0){
-    cushionInsight = `Ты уже начала откладывать в подушку — это уже шаг к спокойствию.`;
-  }
-  if(!cushionInsight){
-    cushionInsightCard.style.display = 'none';
-  }else{
-    cushionInsightCard.innerHTML = `<span class="insight-icon">🌱</span><span>${cushionInsight}</span>`;
-    cushionInsightCard.style.display = 'flex';
-  }
 }
 
 function renderDynamics(){
@@ -3957,30 +3908,6 @@ function render(){
     }
   }
 
-  const cardsInsightCard = document.getElementById('cards-insight-card');
-  let cardsInsight = null;
-  if(data.creditCards.length>0){
-    const totalLimit = data.creditCards.reduce((s,c)=>s+(c.limit||0),0);
-    const totalUsed = data.creditCards.reduce((s,c)=>s+(c.used||0),0);
-    const overallPct = totalLimit>0 ? Math.round((totalUsed/totalLimit)*100) : 0;
-    const busyCard = [...data.creditCards].filter(c=>c.limit>0).sort((a,b)=>(b.used/b.limit)-(a.used/a.limit))[0];
-    const busyPct = busyCard ? Math.round((busyCard.used/busyCard.limit)*100) : 0;
-    if(busyPct>=70){
-      cardsInsight = null;
-    }else if(overallPct<=30){
-      cardsInsight = `В среднем твои карты загружены всего на <b>${overallPct}%</b> — хороший запас прочности.`;
-    }else{
-      cardsInsight = `Суммарно по картам использовано <b>${overallPct}%</b> лимита — в пределах нормы.`;
-    }
-  }
-  if(cardsInsightCard){
-    if(!cardsInsight){
-      cardsInsightCard.style.display = 'none';
-    }else{
-      cardsInsightCard.innerHTML = `<span class="insight-icon">💳</span><span>${cardsInsight}</span>`;
-      cardsInsightCard.style.display = 'flex';
-    }
-  }
 
   // personal debts
   const debtList = document.getElementById('debt-list');
@@ -4015,38 +3942,6 @@ function render(){
     }
   }
 
-  const debtsInsightCard = document.getElementById('debts-insight-card');
-  let debtsInsight = null;
-  if(data.debts.length>0){
-    const owedByMe = data.debts.filter(d=>d.direction==='owe' && d.paid<d.amount);
-    const owedToMe = data.debts.filter(d=>d.direction==='owed' && d.paid<d.amount);
-    const closedCount = data.debts.filter(d=>d.paid>=d.amount).length;
-    if(owedByMe.length>0){
-      const closest = [...owedByMe].sort((a,b)=> b.paid/b.amount - a.paid/a.amount)[0];
-      const pct = Math.round((closest.paid/closest.amount)*100);
-      const left = closest.amount - closest.paid;
-      if(pct>=70){
-        debtsInsight = `До закрытия долга перед «${closest.person}» осталось всего <b>${fmt(left)}</b> — почти рассчиталась!`;
-      }else if(pct>0){
-        debtsInsight = `Ты уже отдала <b>${pct}%</b> долга «${closest.person}» — движение к нулю заметно.`;
-      }else{
-        debtsInsight = null;
-      }
-    }else if(owedToMe.length>0){
-      const total = owedToMe.reduce((s,d)=>s+(d.amount-d.paid),0);
-      debtsInsight = `Тебе должны в сумме <b>${fmt(total)}</b> — не забудь напомнить, когда будет удобно.`;
-    }else if(closedCount>0){
-      debtsInsight = `Все учтённые долги закрыты — чистая финансовая история!`;
-    }
-  }
-  if(debtsInsightCard){
-    if(!debtsInsight){
-      debtsInsightCard.style.display = 'none';
-    }else{
-      debtsInsightCard.innerHTML = `<span class="insight-icon">🤝</span><span>${debtsInsight}</span>`;
-      debtsInsightCard.style.display = 'flex';
-    }
-  }
 
   // dynamics
   renderDynamics();
@@ -4100,23 +3995,6 @@ function render(){
   planScaleCurrent = viewTotals.inc;
   renderPlanScale();
 
-  const planInsightCard = document.getElementById('plan-insight-card');
-  let planInsight = null;
-  const isViewingCurrentMonth = planViewMonth === currentMonthKey();
-  if(isViewingCurrentMonth){
-    const today_ = new Date();
-    const daysInMonth = new Date(today_.getFullYear(), today_.getMonth()+1, 0).getDate();
-    const dayProgress = today_.getDate() / daysInMonth;
-    if(plan.max && viewTotals.exp>0 && viewTotals.exp <= plan.max*dayProgress){
-      planInsight = `Расходы пока укладываются в темп плана — приятно видеть такой контроль.`;
-    }
-  }
-  if(!planInsight){
-    planInsightCard.style.display = 'none';
-  }else{
-    planInsightCard.innerHTML = `<span class="insight-icon">✦</span><span>${planInsight}</span>`;
-    planInsightCard.style.display = 'flex';
-  }
 
   const spendList = document.getElementById('plan-spend-list');
   spendList.innerHTML = plan.spendItems.length===0
@@ -4159,32 +4037,6 @@ function render(){
   const goalSpotlight = document.getElementById('goal-spotlight');
   if(goalSpotlight) goalSpotlight.innerHTML = '';
 
-  const goalsInsightCard = document.getElementById('goals-insight-card');
-  let goalsInsight = null;
-  if(data.goals.length>0){
-    const completedCount = data.goals.filter(g=>g.saved>=g.target).length;
-    const inProgress = data.goals.filter(g=>g.saved<g.target && g.saved>0);
-    if(completedCount>0){
-      goalsInsight = `Ты уже закрыла <b>${completedCount}</b> ${completedCount===1?'цель':completedCount<5?'цели':'целей'} — это результат, который можно потрогать.`;
-    }else if(inProgress.length>0){
-      const closest = [...inProgress].sort((a,b)=> b.saved/b.target - a.saved/a.target)[0];
-      const pct = Math.round((closest.saved/closest.target)*100);
-      const left = closest.target - closest.saved;
-      if(pct>=70){
-        goalsInsight = `До цели «${closest.name}» осталось всего <b>${fmt(left)}</b> — почти на месте!`;
-      }else if(pct>=30){
-        goalsInsight = `Ты уже прошла треть пути к «${closest.name}» — движение видно, продолжай в своём темпе.`;
-      }else{
-        goalsInsight = `Каждый взнос в «${closest.name}» приближает тебя к результату, даже маленький.`;
-      }
-    }
-  }
-  if(!goalsInsight){
-    goalsInsightCard.style.display = 'none';
-  }else{
-    goalsInsightCard.innerHTML = `<span class="insight-icon">✦</span><span>${goalsInsight}</span>`;
-    goalsInsightCard.style.display = 'flex';
-  }
 
   const goalList = document.getElementById('goal-list');
   if(data.goals.length===0){
