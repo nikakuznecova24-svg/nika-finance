@@ -1876,6 +1876,27 @@ const CATEGORY_COLORS = {
 };
 const CATEGORY_COLOR_FALLBACK = ['#FF7A59','#FF3D77','#E0894F','#B8467A','#D9744F','#C9556E','#F2986B'];
 const PLAN_ICON_PASTEL = ['#F6DCE3','#FFE3CC','#E4E9DB','#DCE8F0','#EDE0F5','#F5E6D3','#DCEDE3','#F0E0E6'];
+const PLAN_ICON_RULES = [
+  [['кредит','займ','долг','рассроч'], '🗝️'],
+  [['ипотек','аренд','квартир','жиль'], '🏠'],
+  [['путешеств','поездк','отпуск','тай','билет','самолет','самолёт','авиа'], '✈️'],
+  [['одежд','шоппинг','шопинг','покупк'], '🛍️'],
+  [['здоровь','врач','стоматолог','анализ','лекарств','аптек'], '💊'],
+  [['подар','день рождения','праздник'], '🎁'],
+  [['еда','ресторан','кафе','продукт'], '🍽️'],
+  [['машин','авто','бензин','такси'], '🚗'],
+  [['учеб','курс','обучен','книг'], '📚'],
+  [['связь','интернет','телефон','подписк'], '📱'],
+  [['спорт','зал','трениров'], '🏋️'],
+  [['свобод'], '✨'],
+];
+function getPlanIcon(text){
+  const t = (text||'').toLowerCase();
+  for(const [keywords, icon] of PLAN_ICON_RULES){
+    if(keywords.some(k=>t.includes(k))) return icon;
+  }
+  return '✨';
+}
 let customColorIdx = 0;
 const customColorCache = {};
 function categoryColor(cat){
@@ -4055,8 +4076,7 @@ function render(){
     ? '<p class="empty">Распиши, на что уйдёт бюджет месяца — добавь первый пункт.</p>'
     : plan.spendItems.map((i,idx)=>{
       const iconColor = PLAN_ICON_PASTEL[idx % PLAN_ICON_PASTEL.length];
-      const planIcons = ['🗝️','✈️','🛍️','💳','🏠','🎁','🍽️','🎯'];
-      const iconEmoji = planIcons[idx % planIcons.length];
+      const iconEmoji = getPlanIcon(i.text);
       return `
       <div class="plan-list-item ${i.id===lastAddedPlanSpend?'flash-new':''}" onclick="openPlanSpendModal(${i.id})" style="cursor:pointer;">
         <div class="plan-list-top">
