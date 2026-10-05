@@ -1890,12 +1890,13 @@ const PLAN_ICON_RULES = [
   [['спорт','зал','трениров'], '🏋️'],
   [['свобод'], '✨'],
 ];
-function getPlanIcon(text){
+const PLAN_ICON_FALLBACK = ['✨','💌','⚡️','⭐️'];
+function getPlanIcon(text, idx){
   const t = (text||'').toLowerCase();
   for(const [keywords, icon] of PLAN_ICON_RULES){
     if(keywords.some(k=>t.includes(k))) return icon;
   }
-  return '✨';
+  return PLAN_ICON_FALLBACK[(idx||0) % PLAN_ICON_FALLBACK.length];
 }
 let customColorIdx = 0;
 const customColorCache = {};
@@ -4076,7 +4077,7 @@ function render(){
     ? '<p class="empty">Распиши, на что уйдёт бюджет месяца — добавь первый пункт.</p>'
     : plan.spendItems.map((i,idx)=>{
       const iconColor = PLAN_ICON_PASTEL[idx % PLAN_ICON_PASTEL.length];
-      const iconEmoji = getPlanIcon(i.text);
+      const iconEmoji = getPlanIcon(i.text, idx);
       return `
       <div class="plan-list-item ${i.id===lastAddedPlanSpend?'flash-new':''}" onclick="openPlanSpendModal(${i.id})" style="cursor:pointer;">
         <div class="plan-list-top">
