@@ -2888,11 +2888,11 @@ function openCreditsSummaryModal(){
   const totalDebt = activeCredits.reduce((s,c)=>s+getLoanMetrics(c).remainingBalance,0);
   const totalWithInterest = activeCredits.reduce((s,c)=>s+getLoanMetrics(c).remainingToPay,0);
   const monthlyPayment = activeCredits.reduce((s,c)=>s+(c.paySchedule && c.paySchedule.length ? (c.paySchedule[c.monthsPaid] ?? c.payment) : c.payment),0);
-  const rows = [
-    ['Общий остаток долга', fmt(totalDebt)],
-    ['Итого с процентами', fmt(totalWithInterest)],
-    ['Переплата процентами', fmt(totalWithInterest - totalDebt)],
-    ['В месяц на платежи', fmt(monthlyPayment)],
+  const tiles = [
+    ['остаток долга', fmt(totalDebt), 'var(--ink)'],
+    ['с процентами', fmt(totalWithInterest), 'var(--ink)'],
+    ['переплата', fmt(totalWithInterest - totalDebt), 'var(--amber)'],
+    ['в месяц', fmt(monthlyPayment), 'var(--ink)'],
   ];
 
   const tips = [];
@@ -2912,14 +2912,24 @@ function openCreditsSummaryModal(){
     }
   }
 
-  body.innerHTML = rows.map(([label,val])=>`
-    <div class="cat-compare-row">
-      <div class="cat-compare-info"><div class="cat-compare-name">${label}</div></div>
-      <div class="cat-compare-right"><b>${val}</b></div>
-    </div>`).join('')
-  + (tips.length>0 ? `
-    <div style="font-size:12.5px;font-weight:600;color:var(--ink);margin:16px 0 8px;">на что обратить внимание</div>
-    ${tips.slice(0,3).map(t=>`<div class="advice-item"><div class="advice-icon">💡</div><div class="advice-text">${t}</div></div>`).join('')}
+  body.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      ${tiles.map(([label,val,color])=>`
+        <div style="background:var(--card);border-radius:14px;padding:12px;">
+          <div style="font-size:10.5px;color:var(--ink-soft);margin-bottom:4px;">${label}</div>
+          <div style="font-size:17px;font-weight:700;color:${color};">${val}</div>
+        </div>`).join('')}
+    </div>
+  ` + (tips.length>0 ? `
+    <div style="background:linear-gradient(135deg,var(--glow-1),var(--glow-2));border-radius:20px;padding:16px;margin-top:14px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span style="font-size:15px;">💡</span>
+        <div style="font-size:13.5px;font-weight:700;color:var(--ink);">Что сделать в первую очередь</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${tips.slice(0,3).map(t=>`<div style="background:rgba(255,255,255,.55);border-radius:14px;padding:11px 12px;font-size:12.5px;line-height:1.5;color:var(--ink);">${t}</div>`).join('')}
+      </div>
+    </div>
   ` : '');
   document.getElementById('list-modal').classList.add('open');
 }
