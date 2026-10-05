@@ -1875,6 +1875,7 @@ const CATEGORY_COLORS = {
   'Развлечения':'#FF3D77', 'Подарки и благотворительность':'#E0894F', 'Кредиты':'#B8467A', 'Прочее':'#8D8880'
 };
 const CATEGORY_COLOR_FALLBACK = ['#FF7A59','#FF3D77','#E0894F','#B8467A','#D9744F','#C9556E','#F2986B'];
+const PLAN_ICON_PASTEL = ['#F6DCE3','#FFE3CC','#E4E9DB','#DCE8F0','#EDE0F5','#F5E6D3','#DCEDE3','#F0E0E6'];
 let customColorIdx = 0;
 const customColorCache = {};
 function categoryColor(cat){
@@ -3236,23 +3237,45 @@ function addPlanSpend(){
   document.getElementById('plan-spend-actual').value='';
   saveData(); render();
 }
-function editPlanSpend(id){
-  const item = getPlanFor(planViewMonth).spendItems.find(i=>i.id===id);
-  if(!item) return;
-  editingPlanSpendId = id;
-  document.getElementById('plan-spend-text').value = item.text;
-  document.getElementById('plan-spend-amount').value = item.amount || '';
-  document.getElementById('plan-spend-actual').value = item.actual || '';
-  document.getElementById('plan-spend-submit-btn').textContent = 'Сохранить изменения';
-  document.querySelectorAll('.inline-form').forEach(f=>f.classList.remove('open'));
-  document.getElementById('form-plan-spend').classList.add('open');
-  (function(){ var _el=document.getElementById('plan-spend-text'); if(_el && _el.scrollIntoView) _el.scrollIntoView({behavior:'smooth', block:'center'}); })();
-}
 function delPlanSpend(id){
   const plan = getPlanFor(planViewMonth);
   const i = plan.spendItems.find(i=>i.id===id);
   if(!i) return;
   deleteWithUndo(plan.spendItems, id, `Пункт «${i.text}» удалён из плана`);
+}
+function openPlanSpendModal(id){
+  const item = getPlanFor(planViewMonth).spendItems.find(i=>i.id===id);
+  if(!item) return;
+  document.getElementById('list-modal-title').textContent = 'Пункт плана';
+  renderPlanSpendModalBody(id);
+  document.getElementById('list-modal').classList.add('open');
+}
+function renderPlanSpendModalBody(id){
+  const item = getPlanFor(planViewMonth).spendItems.find(i=>i.id===id);
+  const body = document.getElementById('list-modal-body');
+  if(!item || !body) return;
+  body.innerHTML = `
+    <div class="goal-add" style="flex-direction:column;align-items:stretch;gap:10px;margin-bottom:14px;">
+      <input type="text" id="plan-modal-text" value="${item.text.replace(/"/g,'&quot;')}" placeholder="Название">
+      <input type="number" id="plan-modal-amount" value="${item.amount || ''}" placeholder="Сумма, ₽">
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="primary" style="flex:1;" onclick="savePlanSpendModal(${id})">Сохранить</button>
+      <button class="del-btn" style="flex:none;padding:0 16px;border:1px solid var(--line);border-radius:14px;color:var(--red);" onclick="delPlanSpend(${id}); closeListModal();" aria-label="Удалить">✕ удалить</button>
+    </div>
+  `;
+}
+function savePlanSpendModal(id){
+  const plan = getPlanFor(planViewMonth);
+  const item = plan.spendItems.find(i=>i.id===id);
+  if(!item) return;
+  const text = document.getElementById('plan-modal-text').value.trim();
+  const amount = parseFloat(document.getElementById('plan-modal-amount').value) || 0;
+  if(!text){ shakeField('plan-modal-text'); return; }
+  Object.assign(item, { text, amount });
+  saveData(); render();
+  closeListModal();
+  showToast('Пункт обновлён');
 }
 
 function setBudget(){
@@ -4031,18 +4054,14 @@ function render(){
   spendList.innerHTML = plan.spendItems.length===0
     ? '<p class="empty">Распиши, на что уйдёт бюджет месяца — добавь первый пункт.</p>'
     : plan.spendItems.map((i,idx)=>{
-      const iconColor = CATEGORY_COLOR_FALLBACK[idx % CATEGORY_COLOR_FALLBACK.length];
+      const iconColor = PLAN_ICON_PASTEL[idx % PLAN_ICON_PASTEL.length];
       const planIcons = ['🗝️','✈️','🛍️','💳','🏠','🎁','🍽️','🎯'];
       const iconEmoji = planIcons[idx % planIcons.length];
       return `
-      <div class="plan-list-item ${i.id===lastAddedPlanSpend?'flash-new':''}">
+      <div class="plan-list-item ${i.id===lastAddedPlanSpend?'flash-new':''}" onclick="openPlanSpendModal(${i.id})" style="cursor:pointer;">
         <div class="plan-list-top">
           <span class="plan-list-icon" style="background:${iconColor};">${iconEmoji}</span>
           <span class="plan-list-name">${i.text}</span>
-          <span class="plan-list-actions">
-            <button class="edit-btn" onclick="editPlanSpend(${i.id})" aria-label="Изменить">✎</button>
-            <button class="del-btn" onclick="delPlanSpend(${i.id})" aria-label="Удалить">✕</button>
-          </span>
         </div>
         <div class="plan-list-nums" style="justify-content:flex-end;">
           <span>план: <b>${fmt(i.amount)}</b></span>
