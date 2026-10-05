@@ -1137,17 +1137,22 @@
   <div class="insight-card" id="plan-insight-card" style="display:none;"></div>
 
   <div class="card">
-    <div class="goal-name" style="margin-bottom:10px;">На что потрачу</div>
+    <div class="goal-top-row" style="margin-bottom:10px;">
+      <div class="goal-name">На что потрачу</div>
+      <span class="see-all" onclick="toggleForm('form-plan-spend')">+ пункт</span>
+    </div>
     <div id="plan-spend-list"></div>
     <div id="plan-spend-total" style="display:none;"></div>
-    <div class="form-row" style="margin-top:10px;">
-      <input type="text" id="plan-spend-text" placeholder="Пункт плана">
-      <input type="number" id="plan-spend-amount" placeholder="Запланировано, ₽">
-    </div>
-    <div class="form-row">
-      <input type="number" id="plan-spend-actual" placeholder="Потрачено по факту, ₽ (необязательно)">
-    </div>
-    <button class="primary" id="plan-spend-submit-btn" onclick="addPlanSpend()">Добавить пункт</button>
+    <div class="inline-form" id="form-plan-spend"><div>
+      <div class="form-row">
+        <input type="text" id="plan-spend-text" placeholder="Пункт плана">
+        <input type="number" id="plan-spend-amount" placeholder="Запланировано, ₽">
+      </div>
+      <div class="form-row">
+        <input type="number" id="plan-spend-actual" placeholder="Потрачено по факту, ₽ (необязательно)">
+      </div>
+      <button class="primary" id="plan-spend-submit-btn" onclick="addPlanSpend()">Добавить пункт</button>
+    </div></div>
   </div>
 
   <!-- LIMITS -->
@@ -3231,6 +3236,8 @@ function editPlanSpend(id){
   document.getElementById('plan-spend-amount').value = item.amount || '';
   document.getElementById('plan-spend-actual').value = item.actual || '';
   document.getElementById('plan-spend-submit-btn').textContent = 'Сохранить изменения';
+  document.querySelectorAll('.inline-form').forEach(f=>f.classList.remove('open'));
+  document.getElementById('form-plan-spend').classList.add('open');
   (function(){ var _el=document.getElementById('plan-spend-text'); if(_el && _el.scrollIntoView) _el.scrollIntoView({behavior:'smooth', block:'center'}); })();
 }
 function delPlanSpend(id){
