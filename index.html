@@ -2900,7 +2900,7 @@ function openCreditsSummaryModal(){
     const withMetrics = activeCredits.map(c=>({ c, m: getLoanMetrics(c) }));
     const byRate = [...withMetrics].sort((a,b)=>b.m.r-a.m.r)[0];
     if(byRate.m.r>0){
-      tips.push(`самая дорогая ставка — у «${byRate.c.name}» (~${Math.round(byRate.m.r*1200)/10}% годовых). свободные деньги выгоднее всего направлять туда — так переплата сократится быстрее всего`);
+      tips.push(`самая дорогая ставка — у «${byRate.c.name}» (~${Math.round(byRate.m.r*12000)/10}% годовых). свободные деньги выгоднее всего направлять туда — так переплата сократится быстрее всего`);
     }
     const byInterest = [...withMetrics].sort((a,b)=>b.m.futureInterest-a.m.futureInterest)[0];
     if(byInterest.m.futureInterest>0 && byInterest.c.id!==byRate.c.id){
