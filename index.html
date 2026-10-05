@@ -1686,30 +1686,43 @@ function getLoanMetricsBase(c){
   const pctPaid = effectiveTermMonths>0 ? Math.min(100, Math.round((paidMonths/effectiveTermMonths)*100)) : 0;
   return { r:rate, schedule: pastSchedule.concat(futureSchedule), totalCost, totalOverpay, paidTotal, interestPaidSoFar, remainingBalance, remainingMonths, futureInterest, remainingToPay, pctPaid, effectiveTermMonths };
 }
-// Если остаток задан вручную (c.balance = «осталось выплатить», как в карточке),
-// считаем от него; после каждого платежа он уменьшается на сумму платежа.
+// Если остаток задан вручную (c.balance = «осталось выплатить», как в карточке банка —
+// это остаток ОСНОВНОГО ДОЛГА, не полной суммы с процентами), считаем будущие платежи
+// от него напрямую через ставку кредита. Если с момента ввода остатка прошло ещё
+// несколько платежей, масштабируем остаток по номинальному графику амортизации —
+// это намного точнее, чем просто вычитать из остатка полные суммы платежей (в которых
+// есть и проценты): раньше это занижало остаток долга и искажало разбивку на проценты.
 function getLoanMetrics(c){
   const base = getLoanMetricsBase(c);
-  if(!(c.balance>0)) return base;
+  // у кредитов с готовым графиком платежей (paySchedule) суммы уже точные — не трогаем
+  if(!(c.balance>0) || (c.paySchedule && c.paySchedule.length)) return base;
   const paidMonths = Math.max(0, c.monthsPaid||0);
   const anchor = Math.min(paidMonths, (c.balanceMonths!=null) ? c.balanceMonths : paidMonths);
-  let paidSince = 0;
-  for(let k=anchor;k<paidMonths;k++){
-    paidSince += (c.paySchedule && c.paySchedule.length) ? (c.paySchedule[k] ?? c.payment) : c.payment;
+
+  let remainingBalance = c.balance;
+  if(paidMonths > anchor && base.schedule && base.schedule.length){
+    const balanceAt = (n)=> n<=0 ? c.principal : (base.schedule[n-1] ? base.schedule[n-1].balance : null);
+    const balAnchor = balanceAt(anchor);
+    const balNow = balanceAt(paidMonths);
+    if(balAnchor>0 && balNow!=null){
+      remainingBalance = c.balance * (balNow/balAnchor);
+    }
   }
-  const remainingToPay = Math.max(0, c.balance - paidSince);
-  const share = base.remainingToPay>0 ? Math.min(1, base.futureInterest/base.remainingToPay) : 0;
-  const futureInterest = remainingToPay*share;
-  const remainingBalance = remainingToPay - futureInterest;
-  const nextPay = (c.paySchedule && c.paySchedule.length) ? (c.paySchedule[paidMonths] ?? c.payment) : c.payment;
-  const remainingMonths = remainingToPay>0 ? Math.max(1, Math.ceil(remainingToPay/Math.max(1, nextPay))) : 0;
+  remainingBalance = Math.max(0, remainingBalance - (c.extraPaid||0));
+
+  const nextPay = c.payment;
+  const futureSchedule = buildSchedule(remainingBalance, nextPay, 600, base.r);
+  const remainingMonths = futureSchedule.length;
+  const futureInterest = futureSchedule.reduce((s,row)=>s+row.interest,0);
+  const remainingToPay = remainingBalance + futureInterest;
   const paidTotal = base.paidTotal;
   const effectiveTermMonths = paidMonths + remainingMonths;
   const totalCost = paidTotal + remainingToPay;
   const totalOverpay = Math.max(0, totalCost - c.principal);
   const interestPaidSoFar = Math.max(0, paidTotal - Math.max(0, c.principal - remainingBalance));
   const pctPaid = effectiveTermMonths>0 ? Math.min(100, Math.round((paidMonths/effectiveTermMonths)*100)) : 0;
-  return Object.assign({}, base, { totalCost, totalOverpay, interestPaidSoFar, remainingBalance, remainingMonths, futureInterest, remainingToPay, pctPaid, effectiveTermMonths });
+  const schedule = base.schedule.slice(0, paidMonths).concat(futureSchedule);
+  return Object.assign({}, base, { schedule, totalCost, totalOverpay, interestPaidSoFar, remainingBalance, remainingMonths, futureInterest, remainingToPay, pctPaid, effectiveTermMonths });
 }
 function simulateExtra(c, metrics, extra){
   const { r, remainingBalance, remainingMonths, futureInterest } = metrics;
