@@ -1196,7 +1196,8 @@
 
   <div class="card">
     <div class="goal-name" style="margin-bottom:2px;">Накоплено в подушке</div>
-    <div class="cushion-amount" id="cushion-amount">0 ₽</div>
+    <div class="cushion-amount" id="cushion-amount" onclick="openCushionHistoryModal()" style="cursor:pointer;">0 ₽</div>
+    <div id="cushion-history-hint" style="font-size:11.5px;color:var(--ink-soft);cursor:pointer;" onclick="openCushionHistoryModal()"></div>
     <div class="form-row" style="margin-top:12px;">
       <input type="number" id="cushion-input" placeholder="Сумма, ₽">
       <button class="primary" style="width:auto;" onclick="addCushion()">Отложить</button>
@@ -3546,6 +3547,40 @@ function renderCushion(){
   if(!amountEl) return;
   const saved = data.cushion.saved || 0;
   amountEl.textContent = fmt(saved);
+  const hintEl = document.getElementById('cushion-history-hint');
+  if(hintEl) hintEl.textContent = data.cushionLog.length>0 ? `история (${data.cushionLog.length}) ›` : '';
+}
+function openCushionHistoryModal(){
+  document.getElementById('list-modal-title').textContent = 'История подушки';
+  renderCushionHistoryModalBody();
+  document.getElementById('list-modal').classList.add('open');
+}
+function renderCushionHistoryModalBody(){
+  const body = document.getElementById('list-modal-body');
+  if(!body) return;
+  const list = [...data.cushionLog].sort((a,b)=> b.date.localeCompare(a.date) || b.id-a.id);
+  body.innerHTML = list.length===0
+    ? '<p class="empty">Пока нет ни одной записи.</p>'
+    : list.map(l=>`
+      <div class="tx-item">
+        <div><div class="tx-cat">${l.type==='withdraw' ? '− ' : '+ '}${fmt(l.amount)}</div><div class="tx-date">${l.date}</div></div>
+        <button class="del-btn" onclick="delCushionLogEntry(${l.id})" aria-label="Удалить">✕</button>
+      </div>`).join('');
+}
+function delCushionLogEntry(logId){
+  const entry = data.cushionLog.find(l=>l.id===logId);
+  if(!entry) return;
+  if(entry.type==='add') data.cushion.saved = Math.max(0, data.cushion.saved - entry.amount);
+  else data.cushion.saved += entry.amount;
+  data.cushionLog = data.cushionLog.filter(l=>l.id!==logId);
+  saveData(); render();
+  renderCushionHistoryModalBody();
+  actionWithUndo(`Запись ${fmt(entry.amount)} удалена`, ()=>{
+    if(entry.type==='add') data.cushion.saved += entry.amount;
+    else data.cushion.saved = Math.max(0, data.cushion.saved - entry.amount);
+    data.cushionLog.push(entry);
+    renderCushionHistoryModalBody();
+  });
 }
 
 function renderDynamics(){
@@ -4000,8 +4035,6 @@ function render(){
   spendList.innerHTML = plan.spendItems.length===0
     ? '<p class="empty">Распиши, на что уйдёт бюджет месяца — добавь первый пункт.</p>'
     : plan.spendItems.map((i,idx)=>{
-      const actual = i.actual || 0;
-      const over = i.amount>0 && actual > i.amount;
       const iconColor = CATEGORY_COLOR_FALLBACK[idx % CATEGORY_COLOR_FALLBACK.length];
       return `
       <div class="plan-list-item ${i.id===lastAddedPlanSpend?'flash-new':''}">
@@ -4013,8 +4046,7 @@ function render(){
             <button class="del-btn" onclick="delPlanSpend(${i.id})" aria-label="Удалить">✕</button>
           </span>
         </div>
-        <div class="plan-list-nums">
-          <span>факт: <b style="${over ? 'color:var(--red);' : ''}">${fmt(actual)}</b></span>
+        <div class="plan-list-nums" style="justify-content:flex-end;">
           <span>план: <b>${fmt(i.amount)}</b></span>
         </div>
       </div>`;
@@ -4026,11 +4058,11 @@ function render(){
     spendTotalEl.style.display = 'none';
   }else{
     const totalPlan = plan.spendItems.reduce((s,i)=>s+(i.amount||0),0);
-    const totalActual = plan.spendItems.reduce((s,i)=>s+(i.actual||0),0);
     const totalOver = plan.optimum>0 && totalPlan > plan.optimum;
     spendTotalEl.style.display = 'flex';
     spendTotalEl.className = 'plan-list-nums plan-spend-total-row';
-    spendTotalEl.innerHTML = `<span>факт: <b>${fmt(totalActual)}</b></span><span>план: <b style="${totalOver ? 'color:var(--red);' : ''}">${fmt(totalPlan)}</b></span>`;
+    spendTotalEl.style.justifyContent = 'flex-end';
+    spendTotalEl.innerHTML = `<span>план: <b style="${totalOver ? 'color:var(--red);' : ''}">${fmt(totalPlan)}</b></span>`;
   }
 
   // goals
