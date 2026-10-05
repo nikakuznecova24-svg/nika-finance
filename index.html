@@ -3835,11 +3835,11 @@ function render(){
       const totalDebt = activeCredits.reduce((s,c)=>s+getLoanMetrics(c).remainingBalance,0);
       const monthlyPayment = activeCredits.reduce((s,c)=>s+(c.paySchedule && c.paySchedule.length ? (c.paySchedule[c.monthsPaid] ?? c.payment) : c.payment),0);
       creditList.innerHTML += `
-      <div class="credit-card" onclick="openCreditsSummaryModal()" style="cursor:pointer;">
-        <div class="credit-top"><div class="credit-name">Итог по кредитам</div></div>
+      <div class="credit-card" onclick="openCreditsSummaryModal()" style="cursor:pointer;background:var(--grad-balance);border:none;color:#fff;">
+        <div class="credit-top"><div class="credit-name" style="color:#fff;">Итог по кредитам</div></div>
         <div class="credit-remaining-display">
-          <div class="credit-remaining-num">${fmt(totalDebt)}</div>
-          <div class="credit-remaining-lbl">в месяц уходит ${fmt(monthlyPayment)} · ${activeCredits.length} ${activeCredits.length===1?'кредит':activeCredits.length<5?'кредита':'кредитов'}</div>
+          <div class="credit-remaining-num" style="color:#fff;">${fmt(totalDebt)}</div>
+          <div class="credit-remaining-lbl" style="color:rgba(255,255,255,.85);">в месяц уходит ${fmt(monthlyPayment)} · ${activeCredits.length} ${activeCredits.length===1?'кредит':activeCredits.length<5?'кредита':'кредитов'}</div>
         </div>
       </div>`;
     }
