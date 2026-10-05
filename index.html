@@ -2814,6 +2814,23 @@ function toggleGoalMenu(id){
   openGoalMenuId = openGoalMenuId===id ? null : id;
   render();
 }
+let openGoalHistoryId = null;
+function toggleGoalHistory(id){
+  openGoalHistoryId = openGoalHistoryId===id ? null : id;
+  render();
+}
+function delSavingsLogEntry(logId){
+  const entry = data.savingsLog.find(l=>l.id===logId);
+  if(!entry) return;
+  const g = data.goals.find(g=>g.id===entry.goalId);
+  if(g) g.saved = Math.max(0, g.saved - entry.amount);
+  data.savingsLog = data.savingsLog.filter(l=>l.id!==logId);
+  saveData(); render();
+  actionWithUndo(`Взнос ${fmt(entry.amount)} удалён`, ()=>{
+    if(g) g.saved += entry.amount;
+    data.savingsLog.push(entry);
+  });
+}
 function toggleSimulator(id){
   const el = document.getElementById('sim-panel-'+id);
   if(!el) return;
@@ -4063,6 +4080,8 @@ function render(){
     goalList.innerHTML = data.goals.map((g,i)=>{
       const pct = Math.min(100, Math.round((g.saved/g.target)*100));
       const gMenuOpen = openGoalMenuId===g.id;
+      const gHistory = data.savingsLog.filter(l=>l.goalId===g.id).sort((a,b)=> b.date.localeCompare(a.date) || b.id-a.id);
+      const gHistoryOpen = openGoalHistoryId===g.id;
       return `
       <div class="goal-card ${g.id===lastAddedGoal?'flash-new':''}">
         <div class="sphere c${i%3}"></div>
@@ -4082,6 +4101,21 @@ function render(){
           </div>` : ''}
           <div class="bar-track"><div class="bar-fill" style="width:${pct}%;"></div></div>
           <div class="goal-nums-row"><span><b>${fmt(g.saved)}</b> отложено</span><span>осталось ${fmt(Math.max(0, g.target - g.saved))}</span></div>
+          ${gHistory.length>0 ? `
+          <div class="goal-history-toggle" onclick="toggleGoalHistory(${g.id})" style="font-size:12px;color:var(--ink-soft);cursor:pointer;margin-top:4px;">
+            ${gHistoryOpen ? 'скрыть историю взносов' : `история взносов (${gHistory.length}) ▾`}
+          </div>` : ''}
+          ${gHistoryOpen ? `
+          <div class="goal-history-list" style="margin-top:6px;">
+            ${gHistory.map(l=>`
+              <div class="cat-compare-row" style="padding:7px 0;">
+                <div class="cat-compare-info">
+                  <div class="cat-compare-name" style="font-size:12.5px;">${fmt(l.amount)}</div>
+                  <div class="cat-compare-amt">${l.date}</div>
+                </div>
+                <button class="del-btn" onclick="delSavingsLogEntry(${l.id})" aria-label="Удалить взнос">✕</button>
+              </div>`).join('')}
+          </div>` : ''}
           ${g.deadline ? (()=>{
             const remaining = Math.max(0, g.target - g.saved);
             if(remaining<=0) return '';
