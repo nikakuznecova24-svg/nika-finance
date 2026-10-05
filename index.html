@@ -489,6 +489,7 @@
   }
   .credit-remaining-display{text-align:center;padding:2px 0 6px;}
   .credit-remaining-num{font-size:20px;font-weight:700;letter-spacing:-.01em;}
+  .credit-remaining-total{font-size:12px;font-weight:500;color:var(--ink-soft);}
   .credit-remaining-lbl{font-size:10.5px;color:var(--ink-soft);margin-top:1px;}
   .credit-meta-sub{font-size:10px;color:var(--ink-soft);opacity:.75;text-align:center;margin-bottom:8px;}
   .credit-pay-btn{
@@ -3759,7 +3760,7 @@ function render(){
         </div>` : ''}
 
         <div class="credit-remaining-display">
-          <div class="credit-remaining-num">${fmt(m.remainingToPay)}</div>
+          <div class="credit-remaining-num">${fmt(m.remainingBalance)} <span class="credit-remaining-total">· ${fmt(m.remainingToPay)} с %</span></div>
           <div class="credit-remaining-lbl">платёж <span class="${dueSoon?'due-soon-text':''}">${c.day}-го числа</span></div>
         </div>
         <div class="credit-meta-sub">${c.monthsPaid}/${m.effectiveTermMonths} мес. · ежемесячно ${fmt(c.paySchedule && c.paySchedule.length ? (c.paySchedule[c.monthsPaid] ?? c.paySchedule[c.paySchedule.length-1]) : c.payment)}</div>
@@ -3855,7 +3856,7 @@ function render(){
     const busyCard = [...data.creditCards].filter(c=>c.limit>0).sort((a,b)=>(b.used/b.limit)-(a.used/a.limit))[0];
     const busyPct = busyCard ? Math.round((busyCard.used/busyCard.limit)*100) : 0;
     if(busyPct>=70){
-      cardsInsight = `Карта «${busyCard.name}» нагружена на <b>${busyPct}%</b> — есть смысл разгрузить её в первую очередь.`;
+      cardsInsight = null;
     }else if(overallPct<=30){
       cardsInsight = `В среднем твои карты загружены всего на <b>${overallPct}%</b> — хороший запас прочности.`;
     }else{
@@ -3919,7 +3920,7 @@ function render(){
       }else if(pct>0){
         debtsInsight = `Ты уже отдала <b>${pct}%</b> долга «${closest.person}» — движение к нулю заметно.`;
       }else{
-        debtsInsight = `Долг перед «${closest.person}» — <b>${fmt(left)}</b>. Даже небольшой взнос сдвинет дело с места.`;
+        debtsInsight = null;
       }
     }else if(owedToMe.length>0){
       const total = owedToMe.reduce((s,d)=>s+(d.amount-d.paid),0);
