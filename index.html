@@ -2881,18 +2881,12 @@ function openCreditsSummaryModal(){
   const totalDebt = activeCredits.reduce((s,c)=>s+getLoanMetrics(c).remainingBalance,0);
   const totalWithInterest = activeCredits.reduce((s,c)=>s+getLoanMetrics(c).remainingToPay,0);
   const monthlyPayment = activeCredits.reduce((s,c)=>s+(c.paySchedule && c.paySchedule.length ? (c.paySchedule[c.monthsPaid] ?? c.payment) : c.payment),0);
-  const todayDay = new Date().getDate();
-  const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate();
-  const daysUntil = (day) => day >= todayDay ? (day - todayDay) : (daysInMonth - todayDay + day);
-  const nextUp = [...activeCredits].sort((a,b)=>daysUntil(a.day)-daysUntil(b.day))[0];
   const rows = [
     ['Общий остаток долга', fmt(totalDebt)],
     ['Итого с процентами', fmt(totalWithInterest)],
     ['Переплата процентами', fmt(totalWithInterest - totalDebt)],
     ['В месяц на платежи', fmt(monthlyPayment)],
-    ['Активных кредитов', String(activeCredits.length)],
   ];
-  if(nextUp) rows.push(['Ближайший платёж', `${nextUp.name} · ${nextUp.day}-го · ${fmt(nextUp.payment)}`]);
 
   const tips = [];
   if(activeCredits.length>1){
