@@ -437,10 +437,12 @@
     padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;
     box-shadow:0 3px 12px rgba(30,20,15,.045);
   }
-  .sphere{width:40px;height:40px;border-radius:50%;flex-shrink:0;}
-  .sphere.c0{background:radial-gradient(circle at 32% 30%,#FFC29A,#FF7A59);}
-  .sphere.c1{background:radial-gradient(circle at 32% 30%,#FFA6BE,#FF3D77);}
-  .sphere.c2{background:radial-gradient(circle at 32% 30%,#FFE0B8,#E0894F);}
+  .goal-pct-circle{
+    width:56px;height:56px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-size:14.5px;font-weight:700;background:var(--card-2);color:var(--ink-soft);
+  }
+  .goal-pct-circle.starred{background:var(--grad-goal);color:#fff;}
   .goal-body{flex:1;min-width:0;}
   .goal-top-row{display:flex;justify-content:space-between;align-items:baseline;}
   .goal-name{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;}
@@ -450,15 +452,12 @@
   }
   .star-btn.starred{color:var(--amber);}
   .star-btn:active{transform:scale(1.2);}
-  .goal-pct{font-size:13px;color:var(--ink-soft);}
-  .bar-track{height:6px;background:var(--card-2);border-radius:20px;overflow:hidden;margin-top:8px;}
   .goal-nums-row{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft);margin-top:7px;}
   .goal-nums-row b{color:var(--ink);font-weight:600;}
   .goal-deadline-hint{
     font-size:11.5px;color:var(--amber-text);background:var(--tag-bg-amber);
     border-radius:12px;padding:6px 10px;margin-top:8px;
   }
-  .bar-fill{height:100%;background:var(--grad-goal);border-radius:20px;transition:width .5s ease;}
   .goal-add{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
   .goal-add input{padding:7px 10px;font-size:13px;flex:1;min-width:100px;}
   .goal-add button{width:auto;padding:7px 12px;font-size:12px;}
@@ -2581,8 +2580,8 @@ function addToGoal(id){
   g.saved += val;
   const pctAfter = g.saved / g.target;
   data.savingsLog.push({ id: Date.now(), goalId: id, amount: val, date: today() });
-  input.value='';
   saveData(); render();
+  if(document.getElementById('list-modal').classList.contains('open')) renderGoalModalBody(id);
   if(pctBefore < 1 && pctAfter >= 1){
     showToast(`Цель «${g.name}» достигнута! ✦`);
     celebrateGoal();
@@ -2812,23 +2811,41 @@ function toggleGoalMenu(id){
   openGoalMenuId = openGoalMenuId===id ? null : id;
   render();
 }
-function openGoalHistoryModal(goalId){
+function openGoalModal(goalId){
   const g = data.goals.find(g=>g.id===goalId);
   if(!g) return;
-  document.getElementById('list-modal-title').textContent = `История взносов — ${g.name}`;
-  renderGoalHistoryModalBody(goalId);
+  document.getElementById('list-modal-title').textContent = g.name;
+  renderGoalModalBody(goalId);
   document.getElementById('list-modal').classList.add('open');
 }
-function renderGoalHistoryModalBody(goalId){
-  const list = data.savingsLog.filter(l=>l.goalId===goalId).sort((a,b)=> b.date.localeCompare(a.date) || b.id-a.id);
+function renderGoalModalBody(goalId){
+  const g = data.goals.find(g=>g.id===goalId);
   const body = document.getElementById('list-modal-body');
-  body.innerHTML = list.length===0
+  if(!g || !body) return;
+  const history = data.savingsLog.filter(l=>l.goalId===goalId).sort((a,b)=> b.date.localeCompare(a.date) || b.id-a.id);
+  let deadlineHtml = '';
+  const remaining = Math.max(0, g.target - g.saved);
+  if(g.deadline && remaining>0){
+    const perMonth = remaining / monthsUntil(g.deadline);
+    deadlineHtml = `<div class="goal-deadline-hint">Чтобы успеть к ${formatDeadline(g.deadline)}, откладывай ~${fmt(perMonth)}/мес</div>`;
+  }
+  const historyHtml = history.length===0
     ? '<p class="empty">Пока нет ни одного взноса.</p>'
-    : list.map(l=>`
+    : history.map(l=>`
       <div class="tx-item">
         <div><div class="tx-cat">${fmt(l.amount)}</div><div class="tx-date">${l.date}</div></div>
         <button class="del-btn" onclick="delSavingsLogEntry(${l.id}, ${goalId})" aria-label="Удалить взнос">✕</button>
       </div>`).join('');
+  body.innerHTML = `
+    <div style="font-size:13px;color:var(--ink-soft);margin-bottom:10px;"><b style="color:var(--ink);">${fmt(g.saved)}</b> отложено · осталось ${fmt(remaining)}</div>
+    <div class="goal-add" style="margin-bottom:10px;">
+      <input type="number" id="goal-add-${goalId}" placeholder="Отложить, ₽">
+      <button class="primary" onclick="addToGoal(${goalId})">Отложить</button>
+    </div>
+    ${deadlineHtml}
+    <div style="font-size:12.5px;font-weight:600;color:var(--ink);margin:16px 0 4px;">история взносов</div>
+    ${historyHtml}
+  `;
 }
 function delSavingsLogEntry(logId, modalGoalId){
   const entry = data.savingsLog.find(l=>l.id===logId);
@@ -2837,11 +2854,11 @@ function delSavingsLogEntry(logId, modalGoalId){
   if(g) g.saved = Math.max(0, g.saved - entry.amount);
   data.savingsLog = data.savingsLog.filter(l=>l.id!==logId);
   saveData(); render();
-  if(modalGoalId!=null) renderGoalHistoryModalBody(modalGoalId);
+  if(modalGoalId!=null) renderGoalModalBody(modalGoalId);
   actionWithUndo(`Взнос ${fmt(entry.amount)} удалён`, ()=>{
     if(g) g.saved += entry.amount;
     data.savingsLog.push(entry);
-    if(modalGoalId!=null) renderGoalHistoryModalBody(modalGoalId);
+    if(modalGoalId!=null) renderGoalModalBody(modalGoalId);
   });
 }
 function toggleSimulator(id){
@@ -4128,39 +4145,23 @@ function render(){
     goalList.innerHTML = data.goals.map((g,i)=>{
       const pct = Math.min(100, Math.round((g.saved/g.target)*100));
       const gMenuOpen = openGoalMenuId===g.id;
-      const gHistory = data.savingsLog.filter(l=>l.goalId===g.id).sort((a,b)=> b.date.localeCompare(a.date) || b.id-a.id);
       return `
-      <div class="goal-card ${g.id===lastAddedGoal?'flash-new':''}">
-        <div class="sphere c${i%3}"></div>
+      <div class="goal-card ${g.id===lastAddedGoal?'flash-new':''}" onclick="openGoalModal(${g.id})" style="cursor:pointer;">
+        <div class="goal-pct-circle ${g.starred?'starred':''}">${pct}%</div>
         <div class="goal-body">
           <div class="goal-top-row">
             <div class="goal-name">
-              <button class="star-btn ${g.starred?'starred':''}" onclick="toggleGoalStar(${g.id})" aria-label="Отметить как главную">${g.starred?'★':'☆'}</button>
+              <button class="star-btn ${g.starred?'starred':''}" onclick="event.stopPropagation(); toggleGoalStar(${g.id})" aria-label="Отметить как главную">${g.starred?'★':'☆'}</button>
               ${g.name}
             </div>
-            <span class="edit-btn credit-menu-btn" onclick="toggleGoalMenu(${g.id})" style="cursor:pointer;">⋯</span>
-            <div class="goal-pct">${pct}%</div>
+            <span class="edit-btn credit-menu-btn" onclick="event.stopPropagation(); toggleGoalMenu(${g.id})" style="cursor:pointer;">⋯</span>
           </div>
           ${gMenuOpen ? `
-          <div class="credit-menu-row">
+          <div class="credit-menu-row" onclick="event.stopPropagation();">
             <button class="edit-btn" onclick="editGoal(${g.id})" aria-label="Изменить">✎ изменить</button>
             <button class="del-btn" onclick="delGoal(${g.id})" aria-label="Удалить">✕ удалить</button>
           </div>` : ''}
-          <div class="bar-track"><div class="bar-fill" style="width:${pct}%;"></div></div>
-          <div class="goal-nums-row"><span><b>${fmt(g.saved)}</b> отложено</span><span>осталось ${fmt(Math.max(0, g.target - g.saved))}</span></div>
-          ${gHistory.length>0 ? `
-          <button class="loan-details-toggle" style="margin-top:4px;" onclick="openGoalHistoryModal(${g.id})"><span class="loan-details-label">история взносов (${gHistory.length})</span> <span class="loan-details-arrow">›</span></button>` : ''}
-          ${g.deadline ? (()=>{
-            const remaining = Math.max(0, g.target - g.saved);
-            if(remaining<=0) return '';
-            const months = monthsUntil(g.deadline);
-            const perMonth = remaining / months;
-            return `<div class="goal-deadline-hint">Чтобы успеть к ${formatDeadline(g.deadline)}, откладывай ~${fmt(perMonth)}/мес</div>`;
-          })() : ''}
-          <div class="goal-add">
-            <input type="number" id="goal-add-${g.id}" placeholder="Отложить, ₽">
-            <button class="primary" onclick="addToGoal(${g.id})">Отложить</button>
-          </div>
+          <div style="font-size:12px;color:var(--ink-soft);margin-top:3px;">${fmt(g.saved)} из ${fmt(g.target)}${g.deadline ? ' · к '+formatDeadline(g.deadline) : ''}</div>
         </div>
       </div>`;
     }).join('');
